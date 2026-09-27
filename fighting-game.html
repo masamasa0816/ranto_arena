@@ -1,0 +1,2328 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>乱闘アリーナ -RANTOU ARENA-</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-void:#0b0a12;
+  --bg-panel:#17141f;
+  --bg-panel-2:#1f1a2c;
+  --line:#332c47;
+  --p1:#ff3e6c;
+  --p1-dim:#5c2333;
+  --p2:#37d6c4;
+  --p2-dim:#1d4a45;
+  --gold:#ffce54;
+  --text:#f2eef7;
+  --text-dim:#a79bc2;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-sizing:border-box;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){ }
+}
+*{box-sizing:border-box;}
+html,body{
+  height:100%;
+  margin:0;
+  background:var(--bg-void);
+  color:var(--text);
+  font-family:'Noto Sans JP',sans-serif;
+  overflow:hidden;
+}
+html{scroll-padding-top: env(safe-area-inset-top, 0px);}
+#app{
+  position:relative;
+  width:100%;
+  height:100%;
+  min-height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:
+    radial-gradient(ellipse at 50% -10%, #2a1f3d 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 110%, #1a2a33 0%, transparent 55%),
+    var(--bg-void);
+}
+.screen{
+  display:none;
+  width:100%;
+  max-width:960px;
+  height:100%;
+  max-height:640px;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  position:relative;
+}
+.screen.active{display:flex;}
+#screen-tournament{ justify-content:flex-start; overflow-y:auto; }
+#screen-select{ justify-content:flex-start; overflow-y:auto; }
+#screen-online-lobby{ overflow-y:auto; }
+
+/* ---------- TITLE ---------- */
+#screen-title .logo-wrap{text-align:center;}
+#screen-title h1{
+  font-family:'Orbitron',sans-serif;
+  font-weight:900;
+  font-size:clamp(38px,8vw,72px);
+  letter-spacing:2px;
+  margin:0;
+  line-height:1;
+  background:linear-gradient(180deg,#fff 0%,var(--gold) 55%,#c98a1f 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 4px 0 #7a3b12) drop-shadow(0 0 30px rgba(255,62,108,.35));
+}
+#screen-title .sub{
+  font-size:clamp(13px,2.6vw,18px);
+  color:var(--text-dim);
+  margin-top:10px;
+  letter-spacing:6px;
+}
+#screen-title .roster-strip{
+  display:flex;
+  gap:8px;
+  margin:34px 0 28px;
+  flex-wrap:wrap;
+  justify-content:center;
+  max-width:640px;
+}
+#screen-title .roster-strip span{
+  width:14px;height:14px;border-radius:3px;display:inline-block;
+  box-shadow:0 0 8px currentColor;
+}
+.btn{
+  font-family:'Noto Sans JP',sans-serif;
+  font-weight:700;
+  font-size:17px;
+  color:var(--text);
+  background:linear-gradient(180deg,var(--bg-panel-2),var(--bg-panel));
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:14px 34px;
+  cursor:pointer;
+  letter-spacing:1px;
+  transition:transform .12s ease, border-color .12s ease, box-shadow .12s ease;
+}
+.btn:hover{border-color:var(--p1); transform:translateY(-2px); box-shadow:0 6px 18px rgba(255,62,108,.25);}
+.btn:active{transform:translateY(0px);}
+.btn.primary{
+  background:linear-gradient(180deg,#ff5c85,var(--p1));
+  border-color:#ff87a4;
+  box-shadow:0 6px 0 #a12043, 0 10px 22px rgba(255,62,108,.35);
+}
+.btn.primary:hover{transform:translateY(-3px); box-shadow:0 9px 0 #a12043, 0 14px 26px rgba(255,62,108,.4);}
+.btn.primary:active{transform:translateY(3px); box-shadow:0 3px 0 #a12043;}
+.btn.ghost{background:transparent;}
+.btn:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
+
+/* ---------- MODE SELECT ---------- */
+.panel-title{
+  font-family:'Orbitron',sans-serif;
+  font-weight:700;
+  font-size:clamp(20px,4vw,30px);
+  letter-spacing:2px;
+  margin:0 0 6px;
+}
+.panel-desc{color:var(--text-dim); font-size:13px; margin:0 0 26px; text-align:center; max-width:520px;}
+.mode-grid{display:flex; gap:22px; flex-wrap:wrap; justify-content:center;}
+.mode-card{
+  width:260px;
+  background:var(--bg-panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:22px;
+  cursor:pointer;
+  transition:transform .15s ease, border-color .15s ease;
+  text-align:left;
+}
+.mode-card:hover{transform:translateY(-4px); border-color:var(--p2);}
+.mode-card h3{
+  font-family:'Orbitron',sans-serif;
+  margin:0 0 8px;
+  font-size:19px;
+  color:var(--gold);
+}
+.mode-card p{margin:0; font-size:13px; color:var(--text-dim); line-height:1.6;}
+.mode-card .tag{
+  display:inline-block; margin-top:12px; font-size:11px; letter-spacing:1px;
+  color:var(--p2); border:1px solid var(--p2-dim); border-radius:20px; padding:3px 10px;
+}
+.xp-badge{
+  position:absolute; top:10px; right:12px; font-size:12px; color:var(--text-dim);
+  background:var(--bg-panel); border:1px solid var(--line); border-radius:20px; padding:5px 14px;
+}
+.xp-badge b{color:var(--gold); font-family:'Orbitron',sans-serif;}
+#screen-upgrade .xp-badge{position:static; margin-bottom:22px;}
+.upgrade-grid{display:flex; gap:18px; flex-wrap:wrap; justify-content:center; max-width:820px;}
+.upgrade-card{
+  width:220px; background:var(--bg-panel); border:1px solid var(--line); border-radius:16px;
+  padding:20px; text-align:center;
+}
+.upgrade-card h4{font-family:'Orbitron',sans-serif; margin:0 0 6px; font-size:15px; color:var(--gold);}
+.upgrade-card .cur{font-size:12px; color:var(--text-dim); margin-bottom:14px;}
+.upgrade-card .cur b{color:var(--p2);}
+.upgrade-card .msg{font-size:11px; color:#ff8095; min-height:14px; margin-top:8px;}
+
+.bracket{
+  display:flex; flex-direction:row; gap:14px; width:100%; max-width:760px; margin:10px 0;
+  overflow-x:auto; padding-bottom:4px;
+}
+.bracket-col{display:flex; flex-direction:column; justify-content:space-around; gap:10px; min-width:170px; flex-shrink:0;}
+.bracket-col h4{
+  text-align:center; font-family:'Orbitron',sans-serif; font-size:11px; letter-spacing:1px; color:var(--text-dim); margin:0 0 4px;
+}
+.bracket-match{
+  background:var(--bg-panel); border:1px solid var(--line); border-radius:10px;
+  padding:8px 10px; font-size:12px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+}
+.bracket-match.player{border-color:var(--gold); box-shadow:0 0 12px rgba(255,206,84,.25);}
+.bracket-match.done{opacity:.8;}
+.bracket-match .winner{color:var(--gold); font-weight:700;}
+.bracket-match .arrow{color:var(--text-dim); font-size:9px;}
+.bracket-champion{
+  text-align:center; font-family:'Orbitron',sans-serif; font-size:18px; color:var(--gold);
+  margin-top:6px;
+}
+.bracket-action{
+  text-align:center; font-size:13px; color:var(--text-dim); margin:8px 0; min-height:18px;
+}
+.bracket-action b{color:var(--text);}
+
+/* ---------- CHARACTER SELECT ---------- */
+#screen-select .cs-header{width:100%; display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;}
+.cs-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  width:100%;
+  max-width:760px;
+}
+.cs-card{
+  background:var(--bg-panel);
+  border:2px solid var(--line);
+  border-radius:12px;
+  padding:10px 8px;
+  text-align:center;
+  cursor:pointer;
+  transition:border-color .12s ease, transform .12s ease;
+}
+.cs-card:hover{transform:translateY(-2px);}
+.cs-card.selected{border-color:var(--gold); box-shadow:0 0 16px rgba(255,206,84,.35);}
+.cs-swatch{
+  width:44px;height:44px;border-radius:50%;margin:0 auto 6px;
+  border:2px solid rgba(255,255,255,.25);
+}
+.cs-name{font-weight:700; font-size:13px;}
+.cs-origin{font-size:10px; color:var(--text-dim); margin-top:2px;}
+.cs-gauges{margin-top:7px; display:flex; flex-direction:column; gap:3px;}
+.cs-gauge-row{display:flex; align-items:center; gap:5px;}
+.cs-gauge-label{font-size:8.5px; color:var(--text-dim); width:12px; flex-shrink:0; text-align:center;}
+.cs-gauge-track{flex:1; height:5px; background:#000a; border-radius:3px; overflow:hidden;}
+.cs-gauge-fill{height:100%; border-radius:3px;}
+.cs-gauge-fill.power{background:linear-gradient(90deg,#ff3e6c,#ff9a3e);}
+.cs-gauge-fill.defense{background:linear-gradient(90deg,#3eebff,#37d6c4);}
+.cs-gauge-fill.speed{background:linear-gradient(90deg,#ffce54,#fff2b8);}
+.cs-gauges.large .cs-gauge-track{height:9px;}
+.cs-gauges.large .cs-gauge-label{font-size:11px; width:18px;}
+.cs-random{display:flex; align-items:center; justify-content:center; flex-direction:column; color:var(--text-dim);}
+.cs-secret{border-color:#c8102e; box-shadow:0 0 14px rgba(200,16,46,.55);}
+.cs-unlocked{border-color:var(--gold);}
+.cs-secret .cs-name{color:#ff4d6d;}
+.cs-detail{
+  margin-top:14px; min-height:74px; text-align:center; font-size:12.5px; color:var(--text-dim);
+  max-width:420px; width:100%;
+}
+.cs-detail b{color:var(--gold);}
+.cs-footer{display:flex; gap:14px; margin-top:16px;}
+
+/* ---------- BATTLE ---------- */
+#screen-battle{padding:8px;}
+#arena-wrap{
+  position:relative;
+  width:100%;
+  aspect-ratio:900/420;
+  max-height:70vh;
+  border-radius:10px;
+  overflow:hidden;
+  border:1px solid var(--line);
+  box-shadow:0 0 0 1px #000, 0 20px 50px rgba(0,0,0,.5);
+}
+#arena{width:100%; height:100%; display:block; background:#000;}
+.hud{
+  position:absolute; top:0; left:0; right:0; padding:10px 14px 0;
+  display:flex; flex-direction:column; gap:4px; pointer-events:none;
+}
+.hud-row{display:flex; align-items:center; gap:10px;}
+.hud-bar-wrap{flex:1; height:16px; background:#000000aa; border:1px solid #000; border-radius:4px; overflow:hidden; position:relative;}
+.hud-bar-wrap.p2{direction:rtl;}
+.hud-bar{height:100%; transition:width .18s ease;}
+.hud-bar.p1{background:linear-gradient(90deg,#ff3e6c,#ff9a3e);}
+.hud-bar.p2{background:linear-gradient(90deg,#3eebff,#37d6c4);}
+.hud-name{font-family:'Orbitron',sans-serif; font-size:12px; font-weight:700; width:96px; flex-shrink:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.hud-name.p2{text-align:right;}
+.hud-mid{display:flex; flex-direction:column; align-items:center; min-width:70px;}
+.hud-timer{font-family:'Orbitron',sans-serif; font-weight:700; font-size:22px; color:var(--gold); text-shadow:0 0 10px rgba(255,206,84,.6);}
+.hud-pips{display:flex; gap:4px; margin-top:2px;}
+.pip{width:9px;height:9px;border-radius:50%; background:#3a3450; border:1px solid #55496b;}
+.pip.p1{background:var(--p1);}
+.pip.p2{background:var(--p2);}
+.hud-special{height:7px; width:100%; background:#000a; border-radius:3px; overflow:hidden; margin-top:2px; border:1px solid #000;}
+.hud-special i{display:block; height:100%; background:linear-gradient(90deg,#ffce54,#fff2b8); width:0%; transition:width .12s linear;}
+.hud-special i.ready{background:linear-gradient(90deg,#7dffb0,#e8ffef); box-shadow:0 0 8px rgba(125,255,176,.9);}
+.hud-sp-label{font-size:8.5px; letter-spacing:1.5px; color:var(--text-dim); margin-bottom:1px;}
+.btn-mute{
+  position:absolute; top:10px; right:10px; z-index:6;
+  width:34px; height:34px; border-radius:50%; border:1px solid var(--line);
+  background:#000a; color:var(--text); font-size:16px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+}
+.btn-mute:hover{border-color:var(--p2);}
+.stage-badge{
+  position:absolute; top:56px; left:50%; transform:translateX(-50%);
+  font-family:'Orbitron',sans-serif; font-size:11px; letter-spacing:2px; color:var(--text-dim);
+  background:#0009; padding:2px 10px; border-radius:10px;
+}
+.overlay-msg{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  flex-direction:column; gap:10px; pointer-events:none;
+}
+.overlay-msg .big{
+  font-family:'Orbitron',sans-serif; font-weight:900; font-size:clamp(30px,7vw,58px);
+  color:#fff; text-shadow:0 0 22px rgba(255,62,108,.8), 0 4px 0 #000;
+  opacity:0; transform:scale(.7);
+  transition:opacity .3s ease, transform .3s ease;
+}
+.overlay-msg .small{
+  font-family:'Noto Sans JP',sans-serif; font-weight:700; font-size:15px; color:var(--gold); opacity:0;
+  transition:opacity .3s ease;
+}
+.overlay-msg.show .big{animation:pop .55s cubic-bezier(.2,1.4,.4,1) forwards;}
+.overlay-msg.show .small{animation:fadein .4s ease .25s forwards;}
+@keyframes pop{ to{opacity:1; transform:scale(1);} }
+@keyframes fadein{ to{opacity:1;} }
+
+.result-panel{
+  position:absolute; inset:0; background:#050308ee; display:none;
+  align-items:center; justify-content:center; flex-direction:column; gap:16px; text-align:center; padding:20px;
+}
+.result-panel.show{display:flex;}
+.result-panel h2{font-family:'Orbitron',sans-serif; font-size:clamp(24px,5vw,38px); margin:0; color:var(--gold);}
+.result-panel p{color:var(--text-dim); margin:0; font-size:13px; max-width:400px;}
+.controls-legend{
+  position:absolute; bottom:8px; left:0; right:0; text-align:center; font-size:10.5px; color:#8c7fae;
+  pointer-events:none; letter-spacing:.5px;
+}
+.back-link{position:absolute; top:10px; left:10px; font-size:12px; color:var(--text-dim); cursor:pointer; pointer-events:auto; z-index:5;}
+.back-link:hover{color:var(--text);}
+
+@media (max-width:640px){
+  .cs-grid{grid-template-columns:repeat(3,1fr);}
+  .hud-name{width:60px; font-size:10px;}
+  .controls-legend{font-size:9px;}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TITLE -->
+  <div class="screen active" id="screen-title">
+    <div class="logo-wrap">
+      <h1>乱闘アリーナ</h1>
+      <div class="sub">RANTOU ARENA</div>
+    </div>
+    <div class="roster-strip" id="roster-strip"></div>
+    <button class="btn primary" id="btn-start">ゲームスタート</button>
+  </div>
+
+  <!-- MODE SELECT -->
+  <div class="screen" id="screen-mode">
+    <div class="back-link" data-back="screen-title">&larr; タイトルへ</div>
+    <div class="xp-badge" id="mode-xp-badge">所持XP: <b id="mode-xp-value">0</b></div>
+    <div class="panel-title">モード選択</div>
+    <div class="panel-desc">3本先取のガチンコ勝負、果てなき修羅の道、そして自分を鍛える強化 — お好きな方へ。</div>
+    <div class="mode-grid">
+      <div class="mode-card" id="mode-simple">
+        <h3>シンプルバトル</h3>
+        <p>好きなキャラクターを選んで、ランダムなCPUと3本先取のタイマン勝負。まずはここで操作に慣れよう。</p>
+        <span class="tag">1 VS 1・3本先取</span>
+      </div>
+      <div class="mode-card" id="mode-dungeon">
+        <h3>ダンジョン攻略</h3>
+        <p>全10ステージ、次第に強くなる猛者たちが立ちはだかる。やられたらそこで終わり。最後に待つのは、マサヒロの姿を纏った謎の強敵「？？？」。</p>
+        <span class="tag">全10ステージ・一発勝負</span>
+      </div>
+      <div class="mode-card" id="mode-charget">
+        <h3>キャラクターゲット</h3>
+        <p>全10ステージ、？？？並みに強い猛者たちと戦う。倒すとそのキャラクターを入手でき、他のモードでも使えるようになる。相手はステージごとにランダムで変わる(？？？自身は出現しない)。</p>
+        <span class="tag">全10ステージ・キャラ入手</span>
+      </div>
+      <div class="mode-card" id="mode-tournament">
+        <h3>トーナメント</h3>
+        <p>あなたを含む全16人によるノックアウト方式。1回戦・準々決勝・準決勝・決勝を勝ち抜いて優勝を目指せ。他の対戦カードはCPU同士で自動的に決着する(観戦も可能)。</p>
+        <span class="tag">16人参加・勝ち抜き戦</span>
+      </div>
+      <div class="mode-card" id="mode-online">
+        <h3>オンライン対戦</h3>
+        <p>合言葉を決めて、同じ合言葉を入力した相手とリアルタイムに1対1で対戦できる。友達に合言葉を伝えて挑もう。</p>
+        <span class="tag">合言葉で1 VS 1・一発勝負</span>
+      </div>
+      <div class="mode-card" id="mode-upgrade">
+        <h3>強化</h3>
+        <p>CPU戦に勝つたびに10XP獲得。30XPを使って攻撃力・防御力・移動スピードをほんの少しずつ強化できる。</p>
+        <span class="tag">XPで恒久強化</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ONLINE LOBBY -->
+  <div class="screen" id="screen-online-lobby">
+    <div class="back-link" data-back="screen-mode">&larr; モード選択へ</div>
+    <div class="panel-title">オンライン対戦</div>
+    <div class="panel-desc">友達と同じ合言葉を入力すると、リアルタイムで1対1の対戦ができる。合言葉は他の人にも使われる可能性があるので、なるべく他と被らない言葉にしよう。</div>
+    <div id="online-form" style="display:flex; flex-direction:column; align-items:center; gap:14px; width:100%; max-width:360px;">
+      <input type="text" id="online-passphrase" placeholder="合言葉を入力" maxlength="40"
+        style="width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line); background:var(--bg-panel); color:var(--text); font-size:15px; text-align:center;">
+      <button class="btn primary" id="btn-online-join" style="width:100%;">この合言葉で対戦相手を探す</button>
+      <div id="online-status" style="font-size:12.5px; color:var(--text-dim); text-align:center; min-height:18px;"></div>
+    </div>
+  </div>
+
+  <!-- TOURNAMENT BRACKET -->
+  <div class="screen" id="screen-tournament">
+    <div class="back-link" data-back="screen-mode">&larr; モード選択へ</div>
+    <div class="panel-title">トーナメント</div>
+    <div class="panel-desc" id="tournament-desc">全16人によるノックアウト方式。勝ち上がって頂点を目指そう。</div>
+    <div class="bracket" id="bracket-view"></div>
+    <div class="bracket-action" id="tournament-action"></div>
+    <div class="cs-footer" id="tournament-buttons"></div>
+  </div>
+
+  <!-- UPGRADE -->
+  <div class="screen" id="screen-upgrade">
+    <div class="back-link" data-back="screen-mode">&larr; モード選択へ</div>
+    <div class="panel-title">強化</div>
+    <div class="panel-desc">CPUとの対戦に勝利するたびに10XP。30XPで下記のいずれかを少しだけ底上げできる。効果はすべてのキャラクターに永続的に適用される。</div>
+    <div class="xp-badge" id="upgrade-xp-badge">所持XP: <b id="upgrade-xp-value">0</b></div>
+    <div class="upgrade-grid" id="upgrade-grid"></div>
+  </div>
+
+  <!-- CHARACTER SELECT (shared) -->
+  <div class="screen" id="screen-select">
+    <div class="back-link" data-back="screen-mode">&larr; モード選択へ</div>
+    <div class="cs-header">
+      <div class="panel-title" id="cs-title" style="margin:0;">キャラクターを選べ</div>
+    </div>
+    <div class="cs-grid" id="cs-grid"></div>
+    <div class="cs-detail" id="cs-detail">キャラクターにカーソルを合わせて特技を確認しよう。</div>
+    <div class="cs-footer">
+      <button class="btn primary" id="btn-confirm-select" disabled>この構成で戦う</button>
+    </div>
+  </div>
+
+  <!-- BATTLE -->
+  <div class="screen" id="screen-battle">
+    <div id="arena-wrap">
+      <canvas id="arena" width="900" height="420"></canvas>
+      <div class="hud">
+        <div class="hud-row">
+          <div class="hud-name p1" id="hud-name-p1">P1</div>
+          <div class="hud-bar-wrap p1"><div class="hud-bar p1" id="hud-hp-p1"></div></div>
+          <div class="hud-mid">
+            <div class="hud-timer" id="hud-timer">60</div>
+          </div>
+          <div class="hud-bar-wrap p2"><div class="hud-bar p2" id="hud-hp-p2"></div></div>
+          <div class="hud-name p2" id="hud-name-p2">CPU</div>
+        </div>
+        <div class="hud-row">
+          <div style="width:96px;">
+            <div class="hud-sp-label">SKILL GAUGE</div>
+            <div class="hud-special"><i id="hud-sp-p1"></i></div>
+          </div>
+          <div style="flex:1;"></div>
+          <div class="hud-pips" id="hud-pips-p1"></div>
+          <div style="flex:1;"></div>
+          <div class="hud-pips" id="hud-pips-p2" style="flex-direction:row-reverse;"></div>
+          <div style="flex:1;"></div>
+          <div style="width:96px;">
+            <div class="hud-sp-label" style="text-align:right;">SKILL GAUGE</div>
+            <div class="hud-special"><i id="hud-sp-p2"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="stage-badge" id="stage-badge" style="display:none;"></div>
+      <button class="btn-mute" id="btn-mute" title="音声のON/OFF">🔊</button>
+      <button class="btn-mute" id="btn-pause" title="一時停止" style="right:52px;">⏸</button>
+      <div class="overlay-msg" id="overlay-msg">
+        <div class="big" id="overlay-big"></div>
+        <div class="small" id="overlay-small"></div>
+      </div>
+      <div class="result-panel" id="result-panel">
+        <h2 id="result-title">RESULT</h2>
+        <p id="result-desc"></p>
+        <div style="display:flex; gap:12px;">
+          <button class="btn primary" id="btn-result-continue">つづける</button>
+          <button class="btn ghost" id="btn-result-menu">モード選択へ</button>
+        </div>
+      </div>
+      <div class="result-panel" id="pause-panel">
+        <h2>PAUSED</h2>
+        <p>一時停止中</p>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+          <button class="btn primary" id="btn-resume">再開する</button>
+          <button class="btn ghost" id="btn-pause-skip" style="display:none;">この試合をスキップ</button>
+          <button class="btn ghost" id="btn-pause-menu">モード選択へ</button>
+        </div>
+      </div>
+      <div class="controls-legend">← → 移動　↑ ジャンプ(空中は無敵)　Z パンチ　X キック　C ガード　H 特殊技　P 一時停止</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* =========================================================
+   サウンド (Web Audio APIで全て合成 / 外部音源なし)
+========================================================= */
+let audioCtx = null, masterGain = null, muted = false;
+function ensureAudio(){
+  if(!audioCtx){
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return null;
+    audioCtx = new AC();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = muted ? 0 : 0.85;
+    masterGain.connect(audioCtx.destination);
+  }
+  if(audioCtx.state==='suspended') audioCtx.resume();
+  return audioCtx;
+}
+function toggleMute(){
+  muted = !muted;
+  if(masterGain) masterGain.gain.value = muted ? 0 : 0.85;
+  const btn = document.getElementById('btn-mute');
+  if(btn) btn.textContent = muted ? '🔇' : '🔊';
+}
+function playTone(opts){
+  const ctx = ensureAudio();
+  if(!ctx) return;
+  const {freq=440, freqEnd=null, duration=0.15, type='square', volume=0.18, delay=0} = opts;
+  try{
+    const t0 = ctx.currentTime + delay;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t0);
+    if(freqEnd!=null) osc.frequency.exponentialRampToValueAtTime(Math.max(1,freqEnd), t0+duration);
+    gain.gain.setValueAtTime(volume, t0);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0+duration);
+    osc.connect(gain).connect(masterGain);
+    osc.start(t0);
+    osc.stop(t0+duration+0.03);
+  }catch(e){}
+}
+function playNoise(opts){
+  const ctx = ensureAudio();
+  if(!ctx) return;
+  const {duration=0.15, volume=0.25, delay=0, filterFreq=1500} = opts;
+  try{
+    const t0 = ctx.currentTime + delay;
+    const bufferSize = Math.max(1, Math.floor(ctx.sampleRate*duration));
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for(let i=0;i<bufferSize;i++) data[i] = (Math.random()*2-1) * (1 - i/bufferSize);
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass'; filter.frequency.value = filterFreq;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(volume, t0);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0+duration);
+    noise.connect(filter).connect(gain).connect(masterGain);
+    noise.start(t0);
+  }catch(e){}
+}
+function sfxPunch(){ playTone({freq:520, freqEnd:180, duration:0.09, type:'square', volume:0.15}); }
+function sfxKick(){ playTone({freq:180, freqEnd:55, duration:0.17, type:'sawtooth', volume:0.17}); playNoise({duration:0.09, volume:0.11, filterFreq:900}); }
+function sfxJump(){ playTone({freq:280, freqEnd:620, duration:0.13, type:'sine', volume:0.10}); }
+function sfxGuardOn(){ playTone({freq:850, duration:0.07, type:'triangle', volume:0.08}); }
+function sfxGuardBlock(){ playTone({freq:1200, freqEnd:500, duration:0.06, type:'triangle', volume:0.12}); }
+function sfxSpecial(){ playTone({freq:200, freqEnd:900, duration:0.36, type:'sawtooth', volume:0.16}); playNoise({duration:0.28, volume:0.14, filterFreq:2600, delay:0.02}); }
+function sfxHit(){ playNoise({duration:0.12, volume:0.19, filterFreq:1100}); playTone({freq:140, freqEnd:55, duration:0.12, type:'square', volume:0.12}); }
+function sfxRoundStart(){ playTone({freq:440, duration:0.12, type:'square', volume:0.18}); playTone({freq:700, duration:0.2, type:'square', volume:0.18, delay:0.14}); }
+function sfxWin(){ [523,659,784,1046].forEach((f,i)=> playTone({freq:f, duration:0.2, type:'square', volume:0.15, delay:i*0.12})); }
+function sfxLose(){ [420,320,220].forEach((f,i)=> playTone({freq:f, duration:0.28, type:'sawtooth', volume:0.15, delay:i*0.16})); }
+
+// --- BGM: シンプルな合成ループ (外部音源不要) ---
+let bgmInterval = null, bgmStep = 0;
+const BGM_BPM = 132;
+const BGM_PATTERN = [110.00,110.00,146.83,110.00, 130.81,130.81,164.81,146.83];
+function bgmTick(){
+  const freq = BGM_PATTERN[bgmStep % BGM_PATTERN.length];
+  playTone({freq, duration:0.17, type:'square', volume:0.17});
+  if(bgmStep % 2 === 1) playNoise({duration:0.035, volume:0.10, filterFreq:5200});
+  bgmStep++;
+}
+function startBgm(){
+  if(bgmInterval) return;
+  ensureAudio();
+  bgmStep = 0;
+  bgmTick();
+  bgmInterval = setInterval(bgmTick, (60000/BGM_BPM)/2);
+}
+function stopBgm(){
+  if(bgmInterval){ clearInterval(bgmInterval); bgmInterval=null; }
+}
+
+/* =========================================================
+   キャラクターデータ
+========================================================= */
+const CHARACTERS = [
+  {id:'takeru',   name:'タケル',   origin:'日本・東京',   body:'#e6394a', accent:'#ffe08a', accessory:'headband', gender:'m', sizeScale:1.00,
+   stats:{power:7,defense:6,speed:7}, special:{name:'昇龍撃', desc:'跳び上がりながら渾身の一撃を叩き込む。'}},
+  {id:'wataru',   name:'ワタル',   origin:'日本・大阪',   body:'#3d6ea5', accent:'#ffd166', accessory:'gloves', gender:'m', sizeScale:1.12,
+   stats:{power:6,defense:8,speed:6}, special:{name:'鉄壁ラッシュ', desc:'固い守りから怒涛の連打で押し込む。'}},
+  {id:'mai',      name:'マイ',     origin:'日本・沖縄',   body:'#f4a261', accent:'#ff6f91', accessory:'ribbon', gender:'f', sizeScale:0.82,
+   stats:{power:5,defense:5,speed:9}, special:{name:'疾風脚', desc:'目にも止まらぬ速さの多段蹴り。'}},
+  {id:'masahiro', name:'マサヒロ', origin:'日本・北海道', body:'#2a9d8f', accent:'#e9f5db', accessory:'shoulder', gender:'m', sizeScale:1.08,
+   stats:{power:8,defense:7,speed:5}, special:{name:'剛拳ブレイカー', desc:'全体重を乗せた必殺の重拳。'}},
+  {id:'aleksei',  name:'アレクセイ', origin:'ロシア',      body:'#6a4c93', accent:'#c3b1e1', accessory:'fur', gender:'m', sizeScale:1.42,
+   stats:{power:9,defense:8,speed:4}, special:{name:'ベアハッグクラッシュ', desc:'万力の抱きしめで相手をへし折る。'}},
+  {id:'sofia',    name:'ソフィア', origin:'ブラジル',     body:'#ffb703', accent:'#3ddc97', accessory:'anklet', gender:'f', sizeScale:0.90,
+   stats:{power:6,defense:5,speed:8}, special:{name:'カポエイラスピン', desc:'華麗な回転蹴りで広範囲を薙ぎ払う。'}},
+  {id:'chen',     name:'チェン',   origin:'中国',         body:'#d62828', accent:'#ffd700', accessory:'collar', gender:'m', sizeScale:1.02,
+   stats:{power:7,defense:7,speed:6}, special:{name:'少林拳弾', desc:'気を練り上げた拳打を連続で撃ち込む。'}},
+  {id:'emily',    name:'エミリー', origin:'アメリカ',     body:'#1d3557', accent:'#ff477e', accessory:'cap', gender:'f', sizeScale:0.94,
+   stats:{power:6,defense:6,speed:7}, special:{name:'ストリートアッパー', desc:'ストリート仕込みの強烈な顎打ち。'}},
+  {id:'raj',      name:'ラジ',     origin:'インド',       body:'#e9c46a', accent:'#ef6351', accessory:'turban', gender:'m', sizeScale:1.06,
+   stats:{power:5,defense:9,speed:5}, special:{name:'ヨーガの守り', desc:'不動の構えから相手の一撃を弾き返す。'}},
+  {id:'hans',     name:'ハンス',   origin:'ドイツ',       body:'#495057', accent:'#ff8c42', accessory:'armor', gender:'m', sizeScale:1.34,
+   stats:{power:8,defense:9,speed:3}, special:{name:'グラウンドスタンプ', desc:'大地を踏み砕く衝撃波の一撃。'}},
+  {id:'lina',     name:'リナ',     origin:'韓国',         body:'#ef476f', accent:'#ffd6e8', accessory:'pin', gender:'f', sizeScale:0.86,
+   stats:{power:6,defense:6,speed:8}, special:{name:'テコンドー旋風', desc:'空中で繰り出す旋風の連続蹴り。'}},
+  {id:'marco',    name:'マルコ',   origin:'イタリア',     body:'#06d6a0', accent:'#ffd23f', accessory:'scarf', gender:'m', sizeScale:0.98,
+   stats:{power:7,defense:6,speed:6}, special:{name:'情熱の連打', desc:'情熱のままに繰り出す高速連打。'}},
+];
+const NAMED4 = ['takeru','wataru','mai','masahiro'];
+const OTHERS8 = CHARACTERS.filter(c=>!NAMED4.includes(c.id)).map(c=>c.id);
+
+const DARK_MASAHIRO = {
+  id:'dark_masahiro', name:'？？？', origin:'???', body:'#161616', accent:'#c8102e', accessory:'darkknight', gender:'m',
+  sizeScale:2.6, limbScale:1.9,
+  stats:{power:17,defense:14,speed:9}, special:{name:'？？？', desc:'その正体も技の全貌も、まだ誰も見たことがない…。'},
+  specialDmgMult:2.2
+};
+
+// キャラクターゲットモードで入手できる、？？？並みに強い10人（？？？自身は含まない）
+const CHARACTERS_UNLOCKABLE = [
+  {id:'georg',   name:'ゲオルグ', origin:'ドイツ',       body:'#3a3f4b', accent:'#e0b354', accessory:'armor',    gender:'m',
+   stats:{power:15,defense:13,speed:10}, special:{name:'鉄槌の裁き', desc:'大鉄槌を思わせる圧倒的な一撃。'}},
+  {id:'sarah',   name:'サラ',     origin:'イギリス',     body:'#7a1f3d', accent:'#f2d9e0', accessory:'ribbon',   gender:'f',
+   stats:{power:13,defense:12,speed:14}, special:{name:'疾風の剣舞', desc:'流れるような足さばきからの連撃。'}},
+  {id:'jin',     name:'ジン',     origin:'韓国',         body:'#1f4b3a', accent:'#8be0c8', accessory:'collar',   gender:'m',
+   stats:{power:14,defense:14,speed:11}, special:{name:'連撃波動拳', desc:'気を練り上げた連続拳打。'}},
+  {id:'isabella',name:'イザベラ', origin:'スペイン',     body:'#a3211b', accent:'#ffcb47', accessory:'scarf',    gender:'f',
+   stats:{power:12,defense:11,speed:15}, special:{name:'情熱のフラメンコキック', desc:'情熱的なステップからの回転蹴り。'}},
+  {id:'viktor',  name:'ヴィクトル', origin:'ウクライナ',  body:'#274870', accent:'#bfe3ff', accessory:'fur',      gender:'m',
+   stats:{power:16,defense:15,speed:8}, special:{name:'氷結の一撃', desc:'凍てつく怪力の重打。'}},
+  {id:'nadia',   name:'ナディア', origin:'エジプト',     body:'#b8860b', accent:'#fff3c4', accessory:'turban',   gender:'f',
+   stats:{power:13,defense:13,speed:13}, special:{name:'砂塵の乱舞', desc:'砂塵を巻き上げる連続攻撃。'}},
+  {id:'bjorn',   name:'ビョルン', origin:'ノルウェー',   body:'#4a4a52', accent:'#ffe66d', accessory:'shoulder', gender:'m',
+   stats:{power:16,defense:14,speed:9}, special:{name:'雷神の一撃', desc:'雷鳴のごとき裂帛の一打。'}},
+  {id:'luna',    name:'ルナ',     origin:'メキシコ',     body:'#5b2a86', accent:'#d9b3ff', accessory:'pin',      gender:'f',
+   stats:{power:12,defense:12,speed:16}, special:{name:'月影の乱舞脚', desc:'月光の下で舞う高速連続蹴り。'}},
+  {id:'kai',     name:'カイ',     origin:'アメリカ・ハワイ', body:'#0f6e6e', accent:'#ffd08a', accessory:'anklet', gender:'m',
+   stats:{power:14,defense:12,speed:13}, special:{name:'波動の当て身', desc:'波のうねりを込めた当て身技。'}},
+  {id:'olga',    name:'オルガ',   origin:'ロシア',       body:'#2e2e38', accent:'#ff8fa3', accessory:'gloves',   gender:'f',
+   stats:{power:15,defense:16,speed:7}, special:{name:'鋼鉄の抱擁', desc:'万力のごとき抱きしめでへし折る。'}},
+];
+
+// ダンジョンの並び (stage1-8: 8人, stage9: 強化版再登場, stage10: 暗黒騎士マサヒロ)
+const DUNGEON_ORDER = ['emily','marco','sofia','lina','chen','raj','aleksei','hans'];
+
+function getChar(id){
+  if(id==='dark_masahiro') return DARK_MASAHIRO;
+  const unlockable = CHARACTERS_UNLOCKABLE.find(c=>c.id===id);
+  if(unlockable) return unlockable;
+  return CHARACTERS.find(c=>c.id===id);
+}
+
+/* =========================================================
+   プレイヤー進行度 (XP・強化)
+========================================================= */
+const PROGRESS_KEY = 'rantou_arena_progress_v1';
+const UPGRADE_COST = 30;
+const UPGRADE_DEFS = [
+  {key:'power',   label:'攻撃力', step:0.5, decimals:1, unit:''},
+  {key:'defense', label:'防御力', step:0.5, decimals:1, unit:''},
+  {key:'speed',   label:'移動スピード', step:0.3, decimals:1, unit:''},
+];
+const DEFAULT_BONUS = {power:0, defense:0, speed:0};
+function loadProgress(){
+  try{
+    const raw = localStorage.getItem(PROGRESS_KEY);
+    if(raw){
+      const p = JSON.parse(raw);
+      return {
+        xp: (p && typeof p.xp==='number') ? p.xp : 0,
+        bonus: Object.assign({}, DEFAULT_BONUS, (p && p.bonus) || {}),
+        unlocked: Array.isArray(p && p.unlocked) ? p.unlocked : []
+      };
+    }
+  }catch(e){}
+  return {xp:0, bonus: Object.assign({}, DEFAULT_BONUS), unlocked:[]};
+}
+function saveProgress(){
+  try{ localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress)); }catch(e){}
+}
+let progress = loadProgress();
+function unlockCharacter(id){
+  if(progress.unlocked.includes(id)) return false;
+  progress.unlocked.push(id);
+  saveProgress();
+  return true;
+}
+function awardXP(n){
+  progress.xp += n;
+  saveProgress();
+  updateXpBadges();
+}
+function updateXpBadges(){
+  const a = document.getElementById('mode-xp-value');
+  const b = document.getElementById('upgrade-xp-value');
+  if(a) a.textContent = progress.xp;
+  if(b) b.textContent = progress.xp;
+}
+function renderUpgradeScreen(){
+  updateXpBadges();
+  const grid = document.getElementById('upgrade-grid');
+  grid.innerHTML = '';
+  UPGRADE_DEFS.forEach(def=>{
+    const card = document.createElement('div');
+    card.className = 'upgrade-card';
+    const curVal = progress.bonus[def.key].toFixed(def.decimals!=null?def.decimals:1);
+    card.innerHTML = `
+      <h4>${def.label}アップ</h4>
+      <div class="cur">現在のボーナス：<b>+${curVal}${def.unit||''}</b></div>
+      ${def.desc ? `<div class="cur" style="margin-top:-8px;">${def.desc}</div>` : ''}
+      <button class="btn primary" style="width:100%;">${UPGRADE_COST}XPで強化</button>
+      <div class="msg"></div>`;
+    card.querySelector('button').addEventListener('click', ()=>{
+      const msg = card.querySelector('.msg');
+      if(progress.xp < UPGRADE_COST){
+        msg.textContent = 'XPが足りません';
+        return;
+      }
+      progress.xp -= UPGRADE_COST;
+      progress.bonus[def.key] += def.step;
+      saveProgress();
+      msg.textContent = '';
+      renderUpgradeScreen();
+    });
+    grid.appendChild(card);
+  });
+}
+
+/* =========================================================
+   状態管理
+========================================================= */
+const state = {
+  screen:'screen-title',
+  mode:null,           // 'simple' | 'dungeon' | 'tournament' | 'online' | 'charget'
+  selecting:null,      // 'player' | 'cpu'
+  playerCharId:null,
+  cpuCharId:null,
+  dungeonStage:1,
+  charGetStage:1,
+  roundsToWin:3,
+  p1Wins:0,
+  p2Wins:0,
+  running:false,
+  spectator:false,     // true: CPU同士の観戦中（P1もAIが操作）
+};
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  state.screen = id;
+  if(id!=='screen-battle'){
+    stopBgm();
+    paused = false;
+    state.spectator = false;
+    const pp = document.getElementById('pause-panel');
+    if(pp) pp.classList.remove('show');
+  }
+  if(id==='screen-mode' || id==='screen-title'){
+    netLeaveRoom();
+  }
+  if(id==='screen-mode') updateXpBadges();
+  if(id==='screen-upgrade') renderUpgradeScreen();
+}
+
+document.querySelectorAll('.back-link').forEach(el=>{
+  el.addEventListener('click', ()=> showScreen(el.dataset.back));
+});
+
+/* ---- title roster dots ---- */
+(function initRoster(){
+  const strip = document.getElementById('roster-strip');
+  CHARACTERS.forEach(c=>{
+    const s = document.createElement('span');
+    s.style.color = c.body;
+    s.title = c.name;
+    strip.appendChild(s);
+  });
+})();
+
+document.getElementById('btn-start').addEventListener('click', ()=> { ensureAudio(); showScreen('screen-mode'); });
+document.getElementById('btn-mute').addEventListener('click', toggleMute);
+document.getElementById('btn-pause').addEventListener('click', ()=> setPaused(!paused));
+document.getElementById('btn-resume').addEventListener('click', ()=> setPaused(false));
+document.getElementById('btn-pause-skip').addEventListener('click', ()=> skipSpectatorFromPause());
+document.getElementById('btn-pause-menu').addEventListener('click', ()=>{
+  setPaused(false);
+  showScreen('screen-mode');
+});
+
+document.getElementById('mode-simple').addEventListener('click', ()=>{
+  state.mode = 'simple';
+  openCharSelect('player');
+});
+document.getElementById('mode-dungeon').addEventListener('click', ()=>{
+  state.mode = 'dungeon';
+  openCharSelect('player');
+});
+document.getElementById('mode-charget').addEventListener('click', ()=>{
+  state.mode = 'charget';
+  openCharSelect('player');
+});
+document.getElementById('mode-tournament').addEventListener('click', ()=>{
+  state.mode = 'tournament';
+  openCharSelect('player');
+});
+document.getElementById('mode-online').addEventListener('click', ()=>{
+  state.mode = 'online';
+  openCharSelect('player');
+});
+document.getElementById('mode-upgrade').addEventListener('click', ()=> showScreen('screen-upgrade'));
+
+document.getElementById('btn-online-join').addEventListener('click', ()=> netJoinLobby());
+
+/* =========================================================
+   キャラクター選択画面
+========================================================= */
+const csGrid = document.getElementById('cs-grid');
+const csDetail = document.getElementById('cs-detail');
+const csTitle = document.getElementById('cs-title');
+const btnConfirm = document.getElementById('btn-confirm-select');
+let csSelectedId = null;
+
+function openCharSelect(who){
+  state.selecting = who;
+  csSelectedId = null;
+  btnConfirm.disabled = true;
+  csDetail.innerHTML = 'キャラクターにカーソルを合わせて特技を確認しよう。';
+  csTitle.textContent = who==='player' ? 'あなたのキャラクターを選べ' : '対戦相手のCPUを選べ';
+  buildCsGrid(who);
+  showScreen('screen-select');
+}
+
+const STAT_MAX = 10; // ゲージ表示のスケール基準
+
+function statGaugesHtml(stats, size){
+  const cls = size==='large' ? 'cs-gauges large' : 'cs-gauges';
+  const pct = v => Math.min(100, (v/STAT_MAX)*100);
+  return `
+    <div class="${cls}">
+      <div class="cs-gauge-row"><span class="cs-gauge-label">力</span><div class="cs-gauge-track"><div class="cs-gauge-fill power" style="width:${pct(stats.power)}%"></div></div></div>
+      <div class="cs-gauge-row"><span class="cs-gauge-label">防</span><div class="cs-gauge-track"><div class="cs-gauge-fill defense" style="width:${pct(stats.defense)}%"></div></div></div>
+      <div class="cs-gauge-row"><span class="cs-gauge-label">速</span><div class="cs-gauge-track"><div class="cs-gauge-fill speed" style="width:${pct(stats.speed)}%"></div></div></div>
+    </div>`;
+}
+
+function buildCsGrid(who){
+  csGrid.innerHTML = '';
+  CHARACTERS.forEach(c=>{
+    const card = document.createElement('div');
+    card.className = 'cs-card';
+    card.dataset.id = c.id;
+    card.innerHTML = `
+      <div class="cs-swatch" style="background:${c.body}; box-shadow:0 0 10px ${c.body}88;"></div>
+      <div class="cs-name">${c.name}</div>
+      <div class="cs-origin">${c.origin}</div>
+      ${statGaugesHtml(c.stats)}`;
+    card.addEventListener('click', ()=> selectCsCard(c.id));
+    card.addEventListener('mouseenter', ()=> showCsDetail(c.id));
+    csGrid.appendChild(card);
+  });
+  // キャラクターゲットモードで入手済みのキャラも選べるようにする
+  progress.unlocked.forEach(id=>{
+    const c = CHARACTERS_UNLOCKABLE.find(u=>u.id===id);
+    if(!c) return;
+    const card = document.createElement('div');
+    card.className = 'cs-card cs-unlocked';
+    card.dataset.id = c.id;
+    card.innerHTML = `
+      <div class="cs-swatch" style="background:${c.body}; box-shadow:0 0 10px ${c.body}88;"></div>
+      <div class="cs-name">${c.name} <span style="color:var(--gold); font-size:9px;">GET</span></div>
+      <div class="cs-origin">${c.origin}</div>
+      ${statGaugesHtml(c.stats)}`;
+    card.addEventListener('click', ()=> selectCsCard(c.id));
+    card.addEventListener('mouseenter', ()=> showCsDetail(c.id));
+    csGrid.appendChild(card);
+  });
+  if(who==='cpu' && state.mode==='simple'){
+    const rand = document.createElement('div');
+    rand.className = 'cs-card cs-random';
+    rand.dataset.id = 'random';
+    rand.innerHTML = `<div class="cs-swatch" style="background:#333; display:flex;align-items:center;justify-content:center;">?</div>
+      <div class="cs-name">ランダム</div><div class="cs-origin">おまかせ</div>`;
+    rand.addEventListener('click', ()=> selectCsCard('random'));
+    csGrid.appendChild(rand);
+  }
+  if(secretBossUnlocked) addSecretBossCard();
+}
+
+// プレイヤーが自分で操作する場合の「？？？」はステータス全てが最強になる
+const PLAYER_DARK_MASAHIRO_STATS = {power:20, defense:20, speed:20};
+
+let secretBossUnlocked = false;
+function addSecretBossCard(){
+  if(csGrid.querySelector('.cs-card[data-id="dark_masahiro"]')) return;
+  const c = DARK_MASAHIRO;
+  const card = document.createElement('div');
+  card.className = 'cs-card cs-secret';
+  card.dataset.id = c.id;
+  card.innerHTML = `
+    <div class="cs-swatch" style="background:${c.body}; box-shadow:0 0 14px ${c.accent};"></div>
+    <div class="cs-name">${c.name}</div>
+    <div class="cs-origin">隠しキャラクター</div>
+    ${statGaugesHtml(PLAYER_DARK_MASAHIRO_STATS)}`;
+  card.addEventListener('click', ()=> selectCsCard(c.id));
+  card.addEventListener('mouseenter', ()=> showCsDetail(c.id));
+  csGrid.appendChild(card);
+}
+
+window.addEventListener('keydown', e=>{
+  if(state.screen==='screen-select' && e.shiftKey && e.ctrlKey && !secretBossUnlocked){
+    secretBossUnlocked = true;
+    addSecretBossCard();
+    csDetail.innerHTML = '<b>？？？が解放された！</b> ― 全ステータス最強の隠しキャラクターが使用可能に。';
+  }
+});
+
+function showCsDetail(id){
+  const c = getChar(id);
+  if(!c) return;
+  const displayStats = (id==='dark_masahiro') ? PLAYER_DARK_MASAHIRO_STATS : c.stats;
+  csDetail.innerHTML = `
+    <div><b>${c.name}</b>（${c.origin}） ― 特技「${c.special.name}」：${c.special.desc}</div>
+    ${statGaugesHtml(displayStats, 'large')}`;
+}
+
+function selectCsCard(id){
+  csSelectedId = id;
+  document.querySelectorAll('.cs-card').forEach(el=> el.classList.toggle('selected', el.dataset.id===id));
+  if(id!=='random') showCsDetail(id);
+  else csDetail.innerHTML = '<b>ランダム</b> ― 対戦相手はおまかせで決まります。';
+  btnConfirm.disabled = false;
+}
+
+btnConfirm.addEventListener('click', ()=>{
+  if(!csSelectedId) return;
+  if(state.selecting==='player'){
+    state.playerCharId = csSelectedId;
+    if(state.mode==='simple'){
+      const pool = OTHERS8.filter(id=>id!==csSelectedId);
+      state.cpuCharId = pool[Math.floor(Math.random()*pool.length)];
+      state.p1Wins = 0; state.p2Wins = 0;
+      startBattle({showStage:false});
+    } else if(state.mode==='tournament'){
+      initTournament(csSelectedId);
+      showTournamentScreen();
+    } else if(state.mode==='online'){
+      document.getElementById('online-passphrase').value = '';
+      netSetStatus('');
+      showScreen('screen-online-lobby');
+    } else if(state.mode==='charget'){
+      startCharGetRun();
+    } else {
+      state.dungeonStage = 1;
+      state.p1Wins = 0; state.p2Wins = 0;
+      startDungeonStage();
+    }
+  }
+});
+
+/* =========================================================
+   ダンジョン進行
+========================================================= */
+function dungeonOpponentFor(stage){
+  if(stage<=8) return DUNGEON_ORDER[stage-1];
+  if(stage===9) return DUNGEON_ORDER[6]; // 'aleksei' 強化再登場
+  return 'dark_masahiro'; // stage10
+}
+// ステージが進むほど強さの伸びが加速していく難易度カーブ（1→10でだんだん強くなる体感を重視）
+const DUNGEON_DIFFICULTY_CURVE = [1.00, 1.08, 1.18, 1.30, 1.45, 1.63, 1.85, 2.15, 2.60, 3.35];
+function dungeonDifficulty(stage){
+  const idx = Math.min(DUNGEON_DIFFICULTY_CURVE.length, Math.max(1, stage)) - 1;
+  return DUNGEON_DIFFICULTY_CURVE[idx];
+}
+function startDungeonStage(){
+  state.cpuCharId = dungeonOpponentFor(state.dungeonStage);
+  state.roundsToWin = 1; // ダンジョンは1本勝負
+  state.p1Wins = 0; state.p2Wins = 0;
+  startBattle({showStage:true});
+}
+
+/* =========================================================
+   キャラクターゲット進行（全10ステージ、？？？並みに強い10人からランダムに登場）
+========================================================= */
+let charGetOrder = null; // このランで戦う10人の並び（シャッフル済み）
+function startCharGetRun(){
+  charGetOrder = shuffleArr(CHARACTERS_UNLOCKABLE.map(c=>c.id));
+  state.charGetStage = 1;
+  startCharGetStage();
+}
+function startCharGetStage(){
+  state.cpuCharId = charGetOrder[state.charGetStage-1];
+  state.roundsToWin = 1;
+  state.p1Wins = 0; state.p2Wins = 0;
+  startBattle({showStage:true, charGet:true});
+}
+
+/* =========================================================
+   トーナメント進行（プレイヤー1人 + CPU15人 = 計16人のノックアウト方式）
+   キャラは12種類しかないため、CPU側は重複あり（2人目以降は②③…を付けて区別）
+========================================================= */
+const TOURNAMENT_ROUND_NAMES = ['1回戦', '準々決勝', '準決勝', '決勝'];
+const TOURNAMENT_DIFFICULTY = [1.0, 1.2, 1.45, 1.8];
+const TOURNAMENT_SIZE = 16;
+const CIRCLED_NUMS = ['','②','③','④','⑤','⑥','⑦','⑧'];
+let tournament = null;
+
+function shuffleArr(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+// 参加者は {pid, charId, label} という形で扱う（同じキャラが複数出る場合に区別するため）
+function buildParticipants(playerCharId){
+  const base = CHARACTERS.map(c=>c.id).filter(id=>id!==playerCharId);
+  const need = TOURNAMENT_SIZE - 1;
+  let pool = [];
+  while(pool.length < need) pool = pool.concat(shuffleArr(base));
+  pool = pool.slice(0, need);
+  const seen = {};
+  let pidCounter = 0;
+  const cpuParticipants = pool.map(charId=>{
+    seen[charId] = (seen[charId]||0) + 1;
+    const suffix = seen[charId] > 1 ? CIRCLED_NUMS[seen[charId]-1] || `(${seen[charId]})` : '';
+    return { pid:'cpu'+(pidCounter++), charId, label: getChar(charId).name + suffix };
+  });
+  const player = { pid:'player', charId:playerCharId, label: getChar(playerCharId).name + '(あなた)' };
+  return shuffleArr([player, ...cpuParticipants]);
+}
+
+function simulateCpuMatch(pA, pB){
+  const a = getChar(pA.charId), b = getChar(pB.charId);
+  const sa = a.stats.power + a.stats.defense + a.stats.speed;
+  const sb = b.stats.power + b.stats.defense + b.stats.speed;
+  return Math.random() < sa/(sa+sb) ? pA : pB;
+}
+
+// 全ラウンド分の対戦表を先に作る（未確定のカードは a/b が null = TBD）
+function initTournament(playerCharId){
+  const slots = buildParticipants(playerCharId);
+  const rounds = [];
+  let count = slots.length;
+  const round0 = [];
+  for(let i=0;i<slots.length;i+=2) round0.push({a:slots[i], b:slots[i+1], winner:null});
+  rounds.push(round0);
+  count = round0.length;
+  while(count>1){
+    count = count/2;
+    rounds.push(Array.from({length:count}, ()=>({a:null,b:null,winner:null})));
+  }
+  tournament = {
+    playerParticipant: slots.find(s=>s.pid==='player'),
+    rounds,
+    currentRound: 0,
+    currentMatchIndex: 0,
+    championId: null,
+    eliminated: false,
+    eliminatedRound: null,
+  };
+}
+
+function isPlayerSlot(p){ return !!p && p.pid==='player'; }
+
+function currentTournamentMatch(){
+  if(!tournament || tournament.championId) return null;
+  return tournament.rounds[tournament.currentRound][tournament.currentMatchIndex];
+}
+
+function pairNextTournamentRound(){
+  const finishedRound = tournament.rounds[tournament.currentRound];
+  const winners = finishedRound.map(m=>m.winner);
+  const nextIdx = tournament.currentRound+1;
+  if(nextIdx>=tournament.rounds.length){
+    tournament.championId = winners[0];
+    return;
+  }
+  const nextRound = tournament.rounds[nextIdx];
+  for(let i=0;i<nextRound.length;i++){
+    nextRound[i].a = winners[i*2];
+    nextRound[i].b = winners[i*2+1];
+  }
+  tournament.currentRound = nextIdx;
+  tournament.currentMatchIndex = 0;
+}
+
+function resolveCurrentTournamentMatch(winnerParticipant){
+  const match = tournament.rounds[tournament.currentRound][tournament.currentMatchIndex];
+  match.winner = winnerParticipant;
+  if((isPlayerSlot(match.a) || isPlayerSlot(match.b)) && !isPlayerSlot(winnerParticipant)){
+    tournament.eliminated = true;
+    tournament.eliminatedRound = tournament.currentRound;
+  }
+  tournament.currentMatchIndex++;
+  if(tournament.currentMatchIndex >= tournament.rounds[tournament.currentRound].length){
+    pairNextTournamentRound();
+  }
+}
+
+function startTournamentMatch(){
+  const match = currentTournamentMatch();
+  state.spectator = false;
+  const oppParticipant = isPlayerSlot(match.a) ? match.b : match.a;
+  state.playerCharId = tournament.playerParticipant.charId;
+  state.cpuCharId = oppParticipant.charId;
+  state.roundsToWin = 1;
+  state.p1Wins = 0; state.p2Wins = 0;
+  const diff = TOURNAMENT_DIFFICULTY[tournament.currentRound];
+  startBattle({showStage:false, tournamentDiff:diff});
+  document.getElementById('hud-name-p2').textContent = oppParticipant.label;
+}
+
+// CPU同士のカードを実際に戦わせて観戦する
+function startSpectatorMatch(){
+  const match = currentTournamentMatch();
+  state.spectator = true;
+  state.playerCharId = match.a.charId; // finishMatch側でP1=match.a扱いにするため保持
+  state.cpuCharId = match.b.charId;
+  P1 = freshFighter(match.a.charId, 220, 1, true, 1);
+  P2 = freshFighter(match.b.charId, CW-220, -1, true, 1);
+  document.getElementById('hud-name-p1').textContent = match.a.label;
+  document.getElementById('hud-name-p2').textContent = match.b.label;
+  state.roundsToWin = 1;
+  state.p1Wins = 0; state.p2Wins = 0;
+  renderPips();
+  document.getElementById('result-panel').classList.remove('show');
+  paused = false;
+  document.getElementById('pause-panel').classList.remove('show');
+  document.getElementById('btn-pause').textContent = '⏸';
+  showScreen('screen-battle');
+  const badge = document.getElementById('stage-badge');
+  badge.style.display = 'block';
+  badge.textContent = `${TOURNAMENT_ROUND_NAMES[tournament.currentRound]}（観戦中）：${match.a.label} vs ${match.b.label}`;
+  startBgm();
+  startRound();
+}
+
+// 観戦せずにその場で瞬時に決着させる
+function skipCurrentTournamentMatch(){
+  const match = currentTournamentMatch();
+  const winner = simulateCpuMatch(match.a, match.b);
+  resolveCurrentTournamentMatch(winner);
+  renderTournamentView();
+}
+
+// 一時停止中に「この試合をスキップ」を押した時：現在のHPの優劣で決着をつけて対戦表へ戻る
+function skipSpectatorFromPause(){
+  if(!state.spectator || !P1 || !P2) return;
+  const match = currentTournamentMatch();
+  if(!match) return;
+  const winner = P1.hp===P2.hp ? simulateCpuMatch(match.a, match.b) : (P1.hp>P2.hp ? match.a : match.b);
+  stopBgm();
+  paused = false;
+  document.getElementById('pause-panel').classList.remove('show');
+  state.spectator = false;
+  resolveCurrentTournamentMatch(winner);
+  showTournamentScreen();
+}
+
+function showTournamentScreen(){
+  showScreen('screen-tournament');
+  renderTournamentView();
+}
+
+function renderTournamentView(){
+  const bracketEl = document.getElementById('bracket-view');
+  const actionEl = document.getElementById('tournament-action');
+  const btnsEl = document.getElementById('tournament-buttons');
+
+  bracketEl.innerHTML = tournament.rounds.map((round, ri)=>{
+    return `<div class="bracket-col"><h4>${TOURNAMENT_ROUND_NAMES[ri]}</h4>` +
+      round.map(m=>{
+        const aLabel = m.a ? m.a.label : 'TBD';
+        const bLabel = m.b ? m.b.label : 'TBD';
+        const isPlayerMatch = isPlayerSlot(m.a) || isPlayerSlot(m.b);
+        const doneCls = m.winner ? 'done' : '';
+        return `<div class="bracket-match ${isPlayerMatch?'player':''} ${doneCls}">
+          <span class="${m.winner && m.winner===m.a?'winner':''}">${aLabel}</span>
+          <span class="arrow">vs</span>
+          <span class="${m.winner && m.winner===m.b?'winner':''}">${bLabel}</span>
+        </div>`;
+      }).join('') +
+    `</div>`;
+  }).join('');
+
+  const match = currentTournamentMatch();
+  btnsEl.innerHTML = '';
+
+  if(!match){
+    actionEl.innerHTML = tournament.championId
+      ? `<div class="bracket-champion">🏆 優勝：${tournament.championId.label}</div>`
+      : '';
+    const btn = document.createElement('button');
+    btn.className = 'btn primary';
+    btn.textContent = 'モード選択へ戻る';
+    btn.onclick = ()=> showScreen('screen-mode');
+    btnsEl.appendChild(btn);
+    return;
+  }
+
+  const isPlayerMatch = isPlayerSlot(match.a) || isPlayerSlot(match.b);
+  if(isPlayerMatch){
+    const oppParticipant = isPlayerSlot(match.a) ? match.b : match.a;
+    actionEl.innerHTML = `${TOURNAMENT_ROUND_NAMES[tournament.currentRound]}：あなた(<b>${tournament.playerParticipant.label.replace('(あなた)','')}</b>) vs <b>${oppParticipant.label}</b>`;
+    const btn = document.createElement('button');
+    btn.className = 'btn primary';
+    btn.textContent = '試合開始';
+    btn.onclick = ()=> startTournamentMatch();
+    btnsEl.appendChild(btn);
+  } else {
+    actionEl.innerHTML = `${TOURNAMENT_ROUND_NAMES[tournament.currentRound]}(CPU戦)：<b>${match.a.label}</b> vs <b>${match.b.label}</b>`;
+    const watchBtn = document.createElement('button');
+    watchBtn.className = 'btn primary';
+    watchBtn.textContent = '観戦する';
+    watchBtn.onclick = ()=> startSpectatorMatch();
+    const skipBtn = document.createElement('button');
+    skipBtn.className = 'btn ghost';
+    skipBtn.textContent = 'スキップ';
+    skipBtn.onclick = ()=> skipCurrentTournamentMatch();
+    btnsEl.appendChild(watchBtn);
+    btnsEl.appendChild(skipBtn);
+  }
+}
+
+/* =========================================================
+   オンライン対戦（room capability・合言葉でペアリング）
+========================================================= */
+let netRoomClient = null;   // claude.use("room") のトップレベル
+let netRoom = null;         // 合言葉で join() した NamedRoom
+let netRole = null;         // 'host' | 'guest' | null
+let netRemoteInput = {};    // host側：ゲストから届いた最新の入力
+let netLastSendAt = 0;
+let netUnsubs = [];
+let netOpponentCharId = null;
+let netStarted = false;
+
+function sanitizePassphrase(raw){
+  let s = (raw||'').trim().toLowerCase();
+  s = s.replace(/[^a-z0-9_.\-\u3040-\u30ff\u4e00-\u9faf]/g, '');
+  // room名の正規表現は半角英数字と._-のみなので、日本語が混ざる場合は簡易ハッシュ化する
+  if(/[^a-z0-9_.\-]/.test(s) || s.length===0){
+    let h = 0;
+    const src = (raw||'').trim();
+    for(let i=0;i<src.length;i++){ h = (h*31 + src.charCodeAt(i)) >>> 0; }
+    s = 'kw' + h.toString(36);
+  }
+  if(!/^[a-z0-9]/.test(s)) s = 'kw' + s;
+  return s.slice(0,48);
+}
+
+async function ensureRoomClient(){
+  if(netRoomClient) return netRoomClient;
+  try{
+    netRoomClient = await claude.use('room');
+  }catch(e){ netRoomClient = null; }
+  return netRoomClient;
+}
+
+function netCleanupListeners(){
+  netUnsubs.forEach(fn=>{ try{ fn(); }catch(e){} });
+  netUnsubs = [];
+}
+
+async function netLeaveRoom(){
+  netCleanupListeners();
+  if(netRoom){
+    try{ await netRoom.leave(); }catch(e){}
+  }
+  netRoom = null;
+  netRole = null;
+  netRemoteInput = {};
+  netOpponentCharId = null;
+  netStarted = false;
+}
+
+function netSetStatus(msg){
+  const el = document.getElementById('online-status');
+  if(el) el.textContent = msg;
+}
+
+async function netJoinLobby(){
+  const input = document.getElementById('online-passphrase');
+  const raw = input.value;
+  if(!raw || !raw.trim()){ netSetStatus('合言葉を入力してください'); return; }
+  const name = sanitizePassphrase(raw);
+
+  netSetStatus('接続しています…');
+  const room = await ensureRoomClient();
+  if(!room){
+    netSetStatus('この環境ではオンライン対戦に接続できません（同じ組織のメンバー、または招待されたゲストである必要があります）。');
+    return;
+  }
+
+  await netLeaveRoom();
+  let named;
+  try{
+    named = await room.join(name);
+  }catch(e){
+    netSetStatus('接続できませんでした：' + (e && e.code ? e.code : 'エラー'));
+    return;
+  }
+  netRoom = named;
+  netStarted = false;
+  netSetStatus('合言葉「' + raw.trim() + '」で対戦相手を待っています…');
+
+  await netRoom.presence({charId: state.playerCharId, ready:true});
+
+  const un1 = netRoom.onPeers((change)=>{
+    if(netStarted) return;
+    const others = change.peers.filter(p=>!p.isMe && p.presence && p.presence.ready);
+    if(others.length===0){
+      netSetStatus('合言葉「' + raw.trim() + '」で対戦相手を待っています…');
+      return;
+    }
+    // 自分を含め、待機中の全員から peer 文字列が最小の1人をホストとする
+    const me = change.peers.find(p=>p.isMe);
+    const waiting = change.peers.filter(p=>p.presence && p.presence.ready);
+    if(waiting.length<2 || !me) return;
+    const sorted = waiting.slice().sort((a,b)=> a.peer<b.peer?-1:(a.peer>b.peer?1:0));
+    const hostPeer = sorted[0];
+    const guestPeer = sorted[1];
+    if(me.peer!==hostPeer.peer && me.peer!==guestPeer.peer) return; // 3人目以降は今回は対象外
+    netStarted = true;
+    netRole = (me.peer===hostPeer.peer) ? 'host' : 'guest';
+    const opponent = (netRole==='host') ? guestPeer : hostPeer;
+    netOpponentCharId = (opponent.presence && opponent.presence.charId) || OTHERS8[0];
+    netSetStatus('対戦相手が見つかりました！');
+    startOnlineBattle();
+  }, ()=>{ netSetStatus('通信エラーが発生しました。合言葉を変えてもう一度お試しください。'); });
+  netUnsubs.push(un1);
+}
+
+function netBindBattleListeners(){
+  if(!netRoom) return;
+  if(netRole==='host'){
+    const un = netRoom.on('input', (msg)=>{ netRemoteInput = msg.data || {}; });
+    netUnsubs.push(un);
+  } else if(netRole==='guest'){
+    const un = netRoom.on('state', (msg)=> netApplyStateSnapshot(msg.data));
+    const un2 = netRoom.on('event', (msg)=> netHandleGuestEvent(msg.data));
+    netUnsubs.push(un, un2);
+  }
+  const un3 = netRoom.onPeers((change)=>{
+    if(change.left.some(p=>!p.isMe)){
+      netSetStatus('相手が退出しました');
+      showOverlay('相手が退出しました', '', 1400, ()=>{ showScreen('screen-mode'); });
+    }
+  });
+  netUnsubs.push(un3);
+}
+
+function startOnlineBattle(){
+  const myCharId = state.playerCharId; // 自分が選んだキャラID（上書き前に確保）
+  state.mode = 'online';
+  state.roundsToWin = 1;
+  state.p1Wins = 0; state.p2Wins = 0;
+  netBindBattleListeners();
+  if(netRole==='host'){
+    state.cpuCharId = netOpponentCharId; // 相手がP2
+    startBattle({showStage:false});
+  } else {
+    // ゲスト側：P1=ホストのキャラ（表示用）、P2=自分のキャラ。物理演算はせず受信データを描画するのみ
+    document.getElementById('stage-badge').style.display = 'none';
+    P1 = freshFighter(netOpponentCharId, 220, 1, true, 1);
+    P2 = freshFighter(myCharId, CW-220, -1, true, 1);
+    document.getElementById('hud-name-p1').textContent = P1.cd.name;
+    document.getElementById('hud-name-p2').textContent = P2.cd.name;
+    renderPips();
+    document.getElementById('result-panel').classList.remove('show');
+    paused = false;
+    document.getElementById('pause-panel').classList.remove('show');
+    document.getElementById('btn-pause').textContent = '⏸';
+    showScreen('screen-battle');
+    startBgm();
+    roundActive = true;
+    overlayBusy = false;
+    showOverlay('FIGHT!', '', 1000, ()=>{});
+  }
+}
+
+function netMaybeSendInput(){
+  if(!netRoom) return;
+  const now = performance.now();
+  if(now - netLastSendAt < 45) return;
+  netLastSendAt = now;
+  netRoom.emit('input', {
+    arrowleft: !!keys['arrowleft'], arrowright: !!keys['arrowright'], arrowup: !!keys['arrowup'],
+    z: !!keys['z'], x: !!keys['x'], c: !!keys['c'], h: !!keys['h']
+  }).catch(()=>{});
+}
+
+function netSnapshotFighter(f){
+  return {
+    charId:f.charId, x:f.x, y:f.y, vx:f.vx, vy:f.vy, facing:f.facing, onGround:f.onGround,
+    hp:f.hp, maxHp:f.maxHp, state:f.state, stateTimer:f.stateTimer, guarding:f.guarding,
+    specialCooldown:f.specialCooldown, specialCooldownMax:f.specialCooldownMax,
+    hitFlash:f.hitFlash, walkAnim:f.walkAnim,
+  };
+}
+
+function netMaybeSendState(){
+  if(!netRoom || netRole!=='host') return;
+  const now = performance.now();
+  if(now - netLastSendAt < 45) return;
+  netLastSendAt = now;
+  netRoom.emit('state', {
+    p1:netSnapshotFighter(P1), p2:netSnapshotFighter(P2),
+    p1Wins:state.p1Wins, p2Wins:state.p2Wins,
+  }).catch(()=>{});
+}
+
+function netApplyStateSnapshot(d){
+  if(!d || !P1 || !P2) return;
+  Object.assign(P1, d.p1);
+  Object.assign(P2, d.p2);
+  state.p1Wins = d.p1Wins; state.p2Wins = d.p2Wins;
+  updateHud(); renderPips();
+}
+
+function netEmitEvent(type, payload){
+  if(!netRoom || netRole!=='host') return;
+  netRoom.emit('event', Object.assign({type}, payload||{})).catch(()=>{});
+}
+
+function netHandleGuestEvent(d){
+  if(!d) return;
+  if(d.type==='round_end'){
+    showOverlay(d.big||'', d.reason||'', 1100, ()=>{});
+  } else if(d.type==='match_end'){
+    const guestWon = !d.p1Won; // ゲストは常にP2
+    const panel = document.getElementById('result-panel');
+    document.getElementById('result-title').textContent = guestWon ? 'VICTORY' : 'DEFEAT';
+    document.getElementById('result-title').style.color = guestWon ? 'var(--gold)' : '#ff5c76';
+    document.getElementById('result-desc').textContent = d.p1Won
+      ? `${d.p1Name}が${d.p2Name}を下した！`
+      : `${d.p2Name}が${d.p1Name}を下した！`;
+    const btn = document.getElementById('btn-result-continue');
+    btn.textContent = 'ロビーに戻る';
+    btn.onclick = ()=>{ panel.classList.remove('show'); netLeaveRoom(); showScreen('screen-mode'); };
+    document.getElementById('btn-result-menu').onclick = ()=>{ panel.classList.remove('show'); netLeaveRoom(); showScreen('screen-mode'); };
+    panel.classList.add('show');
+  }
+}
+
+/* =========================================================
+   バトルエンジン
+========================================================= */
+const canvas = document.getElementById('arena');
+const ctx = canvas.getContext('2d');
+const CW = canvas.width, CH = canvas.height;
+const GROUND_Y = 336;
+const ARENA_LEFT = 18, ARENA_RIGHT = CW-18;
+
+const keys = {};
+window.addEventListener('keydown', e=>{
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
+  keys[e.key.toLowerCase()] = true;
+  if(e.key.toLowerCase()==='p' && state.screen==='screen-battle'){
+    setPaused(!paused);
+  }
+});
+window.addEventListener('keyup', e=>{ keys[e.key.toLowerCase()] = false; });
+
+function freshFighter(charId, x, facing, isCpu, difficulty){
+  const base = getChar(charId);
+  const diff = difficulty||1;
+  let cd = base;
+  if(!isCpu){
+    // プレイヤーには強化モードのボーナスを永続的に適用する（元データは複製して保護）
+    // 「？？？」を自分で操作する場合は、どのステータスも最強のベースを使う
+    const baseStats = (charId==='dark_masahiro') ? PLAYER_DARK_MASAHIRO_STATS : base.stats;
+    cd = Object.assign({}, base, {
+      stats: {
+        power: baseStats.power + progress.bonus.power,
+        defense: baseStats.defense + progress.bonus.defense,
+        speed: baseStats.speed + progress.bonus.speed,
+      }
+    });
+  } else if(diff>1){
+    // ダンジョンのステージが進むほどCPUのステータス自体も強化される（限界まで強化）
+    const bonus = diff-1;
+    cd = Object.assign({}, base, {
+      stats: {
+        power: base.stats.power + bonus*1.8,
+        defense: base.stats.defense + bonus*1.4,
+        speed: base.stats.speed + bonus*0.9,
+      }
+    });
+  }
+  const spBase = 420 - cd.stats.speed*12;
+  const maxHp = isCpu ? Math.round(100 * (1 + Math.max(0,diff-1)*0.45)) : 100;
+  return {
+    charId, cd, x, y:GROUND_Y, vx:0, vy:0, facing, onGround:true,
+    hp:maxHp, maxHp,
+    state:'idle', stateTimer:0, actionActiveDone:false,
+    guarding:false,
+    specialCooldown:0, specialCooldownMax: Math.max(140, spBase),
+    isCpu, difficulty: diff,
+    hitFlash:0, koFallen:false,
+    walkAnim:0,
+    aiTimer:0, aiState:'approach',
+  };
+}
+
+let P1, P2, roundTimer, roundActive, overlayBusy, matchOverCallback, stageDiff;
+let paused = false;
+
+function setPaused(on){
+  const resultShown = document.getElementById('result-panel').classList.contains('show');
+  if(on && (resultShown || overlayBusy || !roundActive)) return; // 結果表示中や演出中は一時停止不可
+  paused = on;
+  document.getElementById('pause-panel').classList.toggle('show', paused);
+  const btn = document.getElementById('btn-pause');
+  if(btn) btn.textContent = paused ? '▶' : '⏸';
+  const skipBtn = document.getElementById('btn-pause-skip');
+  if(skipBtn) skipBtn.style.display = (paused && state.spectator) ? 'inline-block' : 'none';
+}
+
+function moveSpeedOf(f){ return 2.6 + f.cd.stats.speed*0.34; }
+
+function startBattle(opts){
+  document.getElementById('stage-badge').style.display = (opts.showStage || opts.tournamentDiff) ? 'block' : 'none';
+  if(opts.tournamentDiff){
+    stageDiff = opts.tournamentDiff;
+  } else if(state.mode==='dungeon' && opts.showStage){
+    stageDiff = dungeonDifficulty(state.dungeonStage);
+  } else {
+    stageDiff = 1; // シンプルバトル・キャラクターゲットは標準難易度
+  }
+  P1 = freshFighter(state.playerCharId, 220, 1, false, 1);
+  P2 = freshFighter(state.cpuCharId, CW-220, -1, true, stageDiff);
+  document.getElementById('hud-name-p1').textContent = P1.cd.name;
+  document.getElementById('hud-name-p2').textContent = P2.cd.name;
+  renderPips();
+  document.getElementById('result-panel').classList.remove('show');
+  paused = false;
+  document.getElementById('pause-panel').classList.remove('show');
+  document.getElementById('btn-pause').textContent = '⏸';
+  showScreen('screen-battle');
+  updateStageBadge();
+  startBgm();
+  startRound();
+}
+
+function updateStageBadge(){
+  if(state.mode==='dungeon'){
+    document.getElementById('stage-badge').textContent = `ステージ ${state.dungeonStage} / 10　―　${P2.cd.name}`;
+  } else if(state.mode==='charget'){
+    document.getElementById('stage-badge').textContent = `キャラクターゲット ${state.charGetStage} / 10　―　${P2.cd.name}`;
+  } else if(state.mode==='tournament'){
+    const match = currentTournamentMatch();
+    const opp = match ? (isPlayerSlot(match.a) ? match.b : match.a) : null;
+    document.getElementById('stage-badge').textContent = `トーナメント ${TOURNAMENT_ROUND_NAMES[tournament.currentRound]}　―　${opp ? opp.label : P2.cd.name}`;
+  }
+}
+
+function renderPips(){
+  const toWin = state.roundsToWin;
+  const p1el = document.getElementById('hud-pips-p1');
+  const p2el = document.getElementById('hud-pips-p2');
+  p1el.innerHTML=''; p2el.innerHTML='';
+  for(let i=0;i<toWin;i++){
+    const a = document.createElement('div'); a.className='pip p1'+(i<state.p1Wins?' filled':'');
+    a.style.background = i<state.p1Wins ? 'var(--p1)' : '#3a3450';
+    p1el.appendChild(a);
+    const b = document.createElement('div'); b.className='pip p2';
+    b.style.background = i<state.p2Wins ? 'var(--p2)' : '#3a3450';
+    p2el.appendChild(b);
+  }
+}
+
+function startRound(){
+  P1.x = 220; P1.y = GROUND_Y; P1.vx=0; P1.vy=0; P1.hp=P1.maxHp; P1.state='idle'; P1.specialCooldown=0; P1.koFallen=false;
+  P2.x = CW-220; P2.y = GROUND_Y; P2.vx=0; P2.vy=0; P2.hp=P2.maxHp; P2.state='idle'; P2.specialCooldown=0; P2.koFallen=false;
+  roundActive = false;
+  updateHud();
+  sfxRoundStart();
+  showOverlay('FIGHT!', '', 1000, ()=>{ roundActive = true; });
+}
+
+function showOverlay(big, small, dur, cb){
+  overlayBusy = true;
+  const el = document.getElementById('overlay-msg');
+  el.classList.remove('show'); void el.offsetWidth;
+  document.getElementById('overlay-big').textContent = big;
+  document.getElementById('overlay-small').textContent = small;
+  el.classList.add('show');
+  setTimeout(()=>{
+    el.classList.remove('show'); // 数秒表示したら消す
+    overlayBusy=false;
+    if(cb) cb();
+  }, dur);
+}
+
+/* ---------- actions ---------- */
+function canAct(f){ return ['idle','walk','jump'].includes(f.state); }
+
+function doJump(f){
+  if(!f.onGround) return;
+  f.vy = -15.5; f.onGround=false; f.state='jump'; f.stateTimer=0;
+  sfxJump();
+}
+
+function doPunch(f){ if(!canAct(f)) return; f.state='punch'; f.stateTimer=0; f.actionActiveDone=false; f.vx=0; sfxPunch(); }
+function doKick(f){ if(!canAct(f)) return; f.state='kick'; f.stateTimer=0; f.actionActiveDone=false; f.vx=0; sfxKick(); }
+function doSpecial(f){
+  if(!canAct(f) || f.specialCooldown>0) return;
+  f.state='special'; f.stateTimer=0; f.actionActiveDone=false; f.vx=0;
+  f.specialCooldown = f.specialCooldownMax;
+  sfxSpecial();
+}
+function setGuard(f, on){
+  if(on && canAct(f)){ f.state='guard'; f.guarding=true; f.vx=0; sfxGuardOn(); }
+  else if(!on && f.state==='guard'){ f.state='idle'; f.guarding=false; }
+}
+
+const ATTACK_DEF = {
+  punch:   {dur:22, activeFrom:7,  activeTo:12, reach:78,  dmg:20, push:8},
+  kick:    {dur:30, activeFrom:10, activeTo:17, reach:96,  dmg:27, push:13},
+  special: {dur:46, activeFrom:12, activeTo:26, reach:118, dmg:50, push:24},
+};
+
+function dmgMultiplierAttacker(cd){ return 1 + (cd.stats.power-5)*0.055; }
+function dmgMultiplierDefender(cd){ return 1 - (cd.stats.defense-5)*0.045; }
+
+function applyDamage(attacker, defender, def){
+  let dmg = def.dmg * dmgMultiplierAttacker(attacker.cd) * dmgMultiplierDefender(defender.cd);
+  if(attacker.state==='special' && attacker.cd.specialDmgMult) dmg *= attacker.cd.specialDmgMult;
+  if(attacker.isCpu) dmg *= (0.9 + (attacker.difficulty-1)*0.35);
+  const facingEach = (attacker.facing===1 && defender.x>attacker.x) || (attacker.facing===-1 && defender.x<attacker.x);
+  if(defender.guarding && facingEach){
+    dmg *= 0.16;
+    defender.vx = attacker.facing*3;
+    sfxGuardBlock();
+  } else {
+    defender.vx = attacker.facing*def.push*0.4;
+    defender.hitFlash = 10;
+    if(defender.state!=='special'){ defender.state='hurt'; defender.stateTimer=0; }
+    sfxHit();
+  }
+  defender.hp = Math.max(0, defender.hp - dmg);
+  updateHud();
+  canvasShake = Math.min(10, canvasShake+ (def===ATTACK_DEF.special?7:3));
+}
+
+function reachBonusFor(cd){
+  const s = cd.sizeScale||1, l = cd.limbScale||1;
+  return (s-1)*40 + (l-1)*40;
+}
+
+function resolveAttack(attacker, defender){
+  const def = ATTACK_DEF[attacker.state];
+  if(!def) return;
+  if(attacker.stateTimer>=def.activeFrom && attacker.stateTimer<=def.activeTo && !attacker.actionActiveDone){
+    const reach = def.reach + reachBonusFor(attacker.cd);
+    const dx = Math.abs(defender.x-attacker.x);
+    const facingOk = (attacker.facing===1 && defender.x>=attacker.x) || (attacker.facing===-1 && defender.x<=attacker.x);
+    if(dx<=reach && facingOk && defender.state!=='ko' && defender.onGround){
+      applyDamage(attacker, defender, def);
+      attacker.actionActiveDone = true;
+    }
+  }
+}
+
+/* ---------- physics / state update ---------- */
+function wrapX(f){
+  // 画面外に出さず、常にコート内(画面内)に留める
+  f.x = Math.max(ARENA_LEFT, Math.min(ARENA_RIGHT, f.x));
+}
+
+function updateFighterPhysics(f){
+  if(f.specialCooldown>0) f.specialCooldown--;
+
+  const speed = moveSpeedOf(f);
+  if(f.state==='walk'){ f.x += f.vx; f.walkAnim++; }
+  else if(f.state==='idle'){ f.walkAnim=0; }
+  else { f.x += f.vx*0.6; }
+
+  // gravity
+  if(!f.onGround || f.state==='jump'){
+    f.vy += 0.85;
+    f.y += f.vy;
+    if(f.y>=GROUND_Y){ f.y=GROUND_Y; f.vy=0; f.onGround=true; if(f.state==='jump') f.state='idle'; }
+  }
+
+  f.stateTimer++;
+  if(f.state==='punch' || f.state==='kick' || f.state==='special'){
+    const def = ATTACK_DEF[f.state];
+    if(f.stateTimer>=def.dur){ f.state='idle'; f.stateTimer=0; }
+  } else if(f.state==='hurt'){
+    f.x += f.vx; f.vx*=0.85;
+    if(f.stateTimer>=18){ f.state='idle'; f.stateTimer=0; }
+  } else if(f.state==='guard'){
+    // held externally
+  }
+  wrapX(f);
+  if(f.hitFlash>0) f.hitFlash--;
+}
+
+function faceOpponent(f, opp){
+  if(f.state==='idle'||f.state==='walk') f.facing = (opp.x>=f.x)?1:-1;
+}
+
+/* ---------- player input ---------- */
+function applyInputToFighter(f, src){
+  if(f.state==='ko') return;
+  const left = src['arrowleft'], right = src['arrowright'], up = src['arrowup'];
+  const guardKey = src['c'];
+
+  if(guardKey && canAct(f)){ setGuard(f,true); }
+  else if(!guardKey && f.state==='guard'){ setGuard(f,false); }
+
+  if(f.state==='idle' || f.state==='walk'){
+    if(left && !right){ f.vx=-moveSpeedOf(f); f.state='walk'; f.facing=-1; }
+    else if(right && !left){ f.vx=moveSpeedOf(f); f.state='walk'; f.facing=1; }
+    else { f.vx=0; if(f.state==='walk') f.state='idle'; }
+  }
+  if(up && f.onGround && f.state!=='guard'){ doJump(f); }
+  if(src['z']) doPunch(f);
+  if(src['x']) doKick(f);
+  if(src['h']) doSpecial(f);
+}
+function handlePlayerInput(){ applyInputToFighter(P1, keys); }
+
+/* ---------- CPU AI ---------- */
+function handleCpuAI(f, opp){
+  if(f.state==='ko') return;
+  faceOpponent(f, opp);
+  const dist = Math.abs(opp.x-f.x);
+  const diff = f.difficulty;
+
+  if(f.state==='guard'){
+    if(Math.random()<0.02*diff || dist>140) setGuard(f,false);
+    return;
+  }
+  if(!canAct(f)) return;
+
+  const reachThreshold = 100;
+  if(dist>reachThreshold){
+    f.vx = f.facing*moveSpeedOf(f);
+    f.state='walk';
+    if(Math.random()<0.0015*diff && f.onGround) doJump(f);
+    return;
+  }
+  f.vx=0; f.state='idle';
+
+  if((opp.state==='punch'||opp.state==='kick'||opp.state==='special') && Math.random()<Math.min(0.85, 0.3*diff)){
+    setGuard(f,true); return;
+  }
+  const aggro = Math.min(0.06, 0.02*diff);
+  if(Math.random()<aggro){
+    const roll = Math.random();
+    if(roll<0.34) doPunch(f);
+    else if(roll<0.62) doKick(f);
+    else if(roll<0.86 && f.specialCooldown<=0) doSpecial(f);
+    else setGuard(f,true);
+  }
+}
+
+/* ---------- HUD ---------- */
+function updateHud(){
+  document.getElementById('hud-hp-p1').style.width = Math.max(0, (P1.hp/P1.maxHp)*100)+'%';
+  document.getElementById('hud-hp-p2').style.width = Math.max(0, (P2.hp/P2.maxHp)*100)+'%';
+  const sp1 = document.getElementById('hud-sp-p1');
+  const sp2 = document.getElementById('hud-sp-p2');
+  sp1.style.width = (100 - Math.min(100, (P1.specialCooldown/P1.specialCooldownMax)*100))+'%';
+  sp2.style.width = (100 - Math.min(100, (P2.specialCooldown/P2.specialCooldownMax)*100))+'%';
+  sp1.classList.toggle('ready', P1.specialCooldown<=0);
+  sp2.classList.toggle('ready', P2.specialCooldown<=0);
+  document.getElementById('hud-timer').textContent = '∞';
+}
+
+/* ---------- drawing ---------- */
+let canvasShake = 0;
+
+function drawBackground(){
+  const grad = ctx.createLinearGradient(0,0,0,CH);
+  grad.addColorStop(0,'#241c35');
+  grad.addColorStop(0.55,'#171225');
+  grad.addColorStop(0.551,'#0d0b14');
+  grad.addColorStop(1,'#050409');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,CW,CH);
+
+  // distant pillars
+  ctx.globalAlpha=0.4;
+  for(let i=0;i<8;i++){
+    ctx.fillStyle = i%2===0 ? '#3a2f55' : '#2a2340';
+    ctx.fillRect(20+i*115, 60, 46, GROUND_Y-60);
+  }
+  ctx.globalAlpha=1;
+
+  // ground
+  ctx.fillStyle = '#0a0812';
+  ctx.fillRect(0, GROUND_Y+2, CW, CH-GROUND_Y-2);
+  ctx.strokeStyle = '#4a3d68';
+  ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(0,GROUND_Y+2); ctx.lineTo(CW,GROUND_Y+2); ctx.stroke();
+  ctx.strokeStyle = '#2a2338';
+  for(let x=-40; x<CW+40; x+=60){
+    ctx.beginPath(); ctx.moveTo(x, GROUND_Y+2); ctx.lineTo(x-20, CH); ctx.stroke();
+  }
+}
+
+function drawAccessory(f, hipY, shoulderY, headY, bw){
+  const cd = f.cd, x=f.x, fc=f.facing, acc=cd.accent;
+  const s = cd.sizeScale||1;
+  ctx.fillStyle = acc;
+  switch(cd.accessory){
+    case 'headband':
+      ctx.fillRect(x-bw/2-1, headY-6*s, bw+2, 5*s);
+      ctx.fillRect(x+fc*(bw/2), headY-4*s, 12*s, 3*s);
+      break;
+    case 'gloves':
+      ctx.beginPath(); ctx.arc(x-bw/2-2*s, shoulderY+22*s, 6*s,0,7); ctx.fill();
+      ctx.beginPath(); ctx.arc(x+bw/2+2*s, shoulderY+22*s, 6*s,0,7); ctx.fill();
+      break;
+    case 'ribbon':
+      ctx.beginPath(); ctx.arc(x, headY-14*s, 4*s,0,7); ctx.fill();
+      break;
+    case 'shoulder':
+      ctx.fillRect(x-bw/2-4*s, shoulderY-4*s, bw+8*s, 8*s);
+      break;
+    case 'fur':
+      ctx.fillRect(x-bw/2-3*s, shoulderY-2*s, bw+6*s, 7*s);
+      break;
+    case 'anklet':
+      ctx.fillRect(x-bw/2-2*s, hipY+34*s, 6*s,4*s);
+      ctx.fillRect(x+bw/2-4*s, hipY+34*s, 6*s,4*s);
+      break;
+    case 'collar':
+      ctx.fillRect(x-bw/2, shoulderY-3*s, bw, 4*s);
+      break;
+    case 'cap':
+      ctx.beginPath(); ctx.arc(x, headY-4*s, 11*s, Math.PI, Math.PI*2); ctx.fill();
+      ctx.fillRect(x+fc*2*s, headY-4*s, fc*14*s, 4*s);
+      break;
+    case 'turban':
+      ctx.beginPath(); ctx.arc(x, headY-4*s, 12*s, Math.PI*0.9, Math.PI*2.1); ctx.fill();
+      break;
+    case 'armor':
+      ctx.fillRect(x-bw/2-3*s, shoulderY-3*s, bw+6*s, 10*s);
+      ctx.strokeStyle='#00000055'; ctx.strokeRect(x-bw/2-3*s, shoulderY-3*s, bw+6*s, 10*s);
+      break;
+    case 'pin':
+      ctx.beginPath(); ctx.arc(x-6*s, headY-10*s, 3*s,0,7); ctx.fill();
+      break;
+    case 'scarf':
+      ctx.fillRect(x-bw/2-2*s, shoulderY-2*s, bw+4*s, 6*s);
+      ctx.fillRect(x-fc*4*s, shoulderY+2*s, 6*s, 16*s);
+      break;
+    case 'darkknight':
+      // cape（巨躯にふさわしく大きく）
+      ctx.fillStyle = '#7a0d20';
+      ctx.beginPath();
+      ctx.moveTo(x-fc*bw/2, shoulderY-2*s);
+      ctx.lineTo(x-fc*bw/2-fc*8*s, hipY+70*s);
+      ctx.lineTo(x-fc*bw/2+fc*16*s, hipY+66*s);
+      ctx.closePath(); ctx.fill();
+      // helm horns
+      ctx.fillStyle = '#111';
+      ctx.beginPath(); ctx.moveTo(x-9*s,headY-8*s); ctx.lineTo(x-17*s,headY-30*s); ctx.lineTo(x-4*s,headY-9*s); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(x+9*s,headY-8*s); ctx.lineTo(x+17*s,headY-30*s); ctx.lineTo(x+4*s,headY-9*s); ctx.fill();
+      // glowing eyes
+      ctx.fillStyle = '#ff2d4d';
+      ctx.shadowColor='#ff2d4d'; ctx.shadowBlur=10*s;
+      ctx.fillRect(x-7*s, headY-2*s, 5*s,3*s);
+      ctx.fillRect(x+2*s, headY-2*s, 5*s,3*s);
+      ctx.shadowBlur=0;
+      break;
+  }
+}
+
+function drawFighter(f){
+  const x=f.x, fc=f.facing;
+  let footY = f.y;
+  ctx.save();
+
+  if(f.state==='ko'){
+    // lying down
+    ctx.translate(x, GROUND_Y);
+    ctx.scale(fc,1);
+    ctx.rotate(Math.PI/2 * -0.98);
+    drawBody(f, 0, true);
+    ctx.restore();
+    return;
+  }
+
+  ctx.translate(x, 0);
+  if(f.hitFlash>0 && f.hitFlash%4<2){ ctx.globalAlpha = 0.55; }
+  drawBody(f, footY, false);
+  ctx.restore();
+}
+
+function drawBody(f, footY, lying){
+  const cd = f.cd, fc = lying?1:f.facing;
+  const scale = cd.sizeScale||1, limbScale = cd.limbScale||1;
+  const bw = 34*scale, torsoH = 46*scale, legH = 40*scale*limbScale, headR = 13*scale;
+  const jumpOffset = f.onGround?0:-14*scale;
+  const legSpread = (f.state==='walk') ? Math.sin(f.walkAnim*0.35)*10*scale : 0;
+  const crouchOffset = (f.state==='guard')? 6*scale : 0;
+
+  const hipY = footY - legH + jumpOffset + crouchOffset;
+  const shoulderY = hipY - torsoH*0.62;
+  const headY = shoulderY - headR - 4;
+
+  // shadow
+  if(!lying){
+    ctx.save();
+    ctx.globalAlpha = 0.35;
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.ellipse(f.x, GROUND_Y+6, (26 - Math.abs(jumpOffset)*0.6)*scale, 7*scale, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // back leg
+  ctx.fillStyle = shade(cd.body,-18);
+  ctx.fillRect(f.x - 8*scale - legSpread*0.3, hipY, 12*scale, legH - jumpOffset*0.3);
+  // front leg (kick extends, always attached at the hip)
+  ctx.fillStyle = cd.body;
+  if(f.state==='kick'){
+    const def = ATTACK_DEF.kick;
+    const t = easeOutQuad(Math.min(1, Math.max(0,(f.stateTimer-2)/(def.activeTo))));
+    const kickExtend = (10 + t*70)*scale*limbScale;
+    const hipAttachX = f.x + fc*4*scale;
+    if(fc===1) ctx.fillRect(hipAttachX, hipY+8*scale, kickExtend, 10*scale);
+    else ctx.fillRect(hipAttachX-kickExtend, hipY+8*scale, kickExtend, 10*scale);
+    // 足先（リアルな足の描写）
+    const footX = fc===1 ? hipAttachX+kickExtend : hipAttachX-kickExtend;
+    ctx.fillStyle = shade(cd.body,-25);
+    ctx.fillRect(fc===1?footX:footX-8*scale, hipY+6*scale, 8*scale, 14*scale);
+    ctx.fillStyle = cd.body;
+  } else {
+    const frontLegX = f.x + 4*scale + legSpread*0.3;
+    ctx.fillRect(frontLegX-6*scale, hipY, 12*scale, legH);
+    // つま先
+    ctx.fillStyle = shade(cd.body,-25);
+    ctx.fillRect(frontLegX-7*scale, hipY+legH-6*scale, 14*scale, 7*scale);
+    ctx.fillStyle = cd.body;
+  }
+
+  // torso（性別で体型を変える：女性はウエストを絞ったシルエット）
+  ctx.fillStyle = cd.body;
+  if(cd.gender==='f'){
+    const waist = bw*0.68, hipFlare = bw*0.82;
+    ctx.beginPath();
+    ctx.moveTo(f.x-bw/2, shoulderY);
+    ctx.lineTo(f.x+bw/2, shoulderY);
+    ctx.lineTo(f.x+waist/2, shoulderY+torsoH*0.62);
+    ctx.lineTo(f.x+hipFlare/2, shoulderY+torsoH);
+    ctx.lineTo(f.x-hipFlare/2, shoulderY+torsoH);
+    ctx.lineTo(f.x-waist/2, shoulderY+torsoH*0.62);
+    ctx.closePath();
+    ctx.fill();
+  } else {
+    roundRect(f.x-bw/2, shoulderY, bw, torsoH, 6*scale);
+    ctx.fill();
+  }
+  // accent stripe（ウェア）
+  ctx.fillStyle = cd.accent;
+  ctx.fillRect(f.x-bw/2, shoulderY+torsoH*0.4, bw, 5*scale);
+
+  // back arm
+  ctx.fillStyle = shade(cd.body,-15);
+  ctx.fillRect(f.x - fc*4*scale - 5*scale, shoulderY+4*scale, 10*scale, 26*scale*limbScale);
+
+  // front arm (punch/special extends、拳付き)
+  let armLen = 26*scale*limbScale;
+  if(f.state==='punch'){
+    const def = ATTACK_DEF.punch;
+    const t = easeOutQuad(Math.min(1, Math.max(0,(f.stateTimer-2)/def.activeTo)));
+    armLen = (10 + t*66)*scale*limbScale;
+  } else if(f.state==='special'){
+    const def = ATTACK_DEF.special;
+    const t = easeOutQuad(Math.min(1, Math.max(0,(f.stateTimer-2)/def.activeTo)));
+    armLen = (10 + t*88)*scale*limbScale;
+  } else if(f.state==='guard'){
+    armLen = 16*scale;
+  }
+  ctx.fillStyle = cd.body;
+  const armY = shoulderY+4*scale;
+  if(fc===1) ctx.fillRect(f.x+2*scale, armY, armLen, 10*scale);
+  else ctx.fillRect(f.x-2*scale-armLen, armY, armLen, 10*scale);
+  // 拳（パンチ・特殊技時にリアルな拳を描写）
+  if(f.state==='punch' || f.state==='special'){
+    const fistX = fc===1 ? f.x+2*scale+armLen : f.x-2*scale-armLen;
+    ctx.fillStyle = shade(cd.body,-20);
+    ctx.beginPath();
+    ctx.arc(fistX, armY+5*scale, 7*scale, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // guard shield flash
+  if(f.state==='guard'){
+    ctx.fillStyle = 'rgba(140,220,255,0.35)';
+    ctx.beginPath();
+    ctx.ellipse(f.x+fc*22*scale, shoulderY+18*scale, 14*scale, 22*scale, 0, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // special glow ring
+  if(f.state==='special'){
+    const def = ATTACK_DEF.special;
+    const t = Math.min(1,(f.stateTimer)/def.dur);
+    ctx.save();
+    ctx.globalAlpha = 0.5*(1-t);
+    ctx.strokeStyle = cd.accent;
+    ctx.lineWidth=4;
+    ctx.beginPath();
+    ctx.arc(f.x, shoulderY+torsoH*0.4, (20+t*50)*scale, 0, Math.PI*2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // 髪（性別で描き分け：女性は肩まで届くロングヘア、男性は短髪）
+  const hairColor = shade(cd.body,-55);
+  ctx.fillStyle = hairColor;
+  if(cd.gender==='f'){
+    ctx.beginPath();
+    ctx.arc(f.x, headY-headR*0.15, headR*1.05, Math.PI*1.05, Math.PI*1.95);
+    ctx.fill();
+    ctx.fillRect(f.x-fc*headR*0.9-2*scale, headY-headR*0.3, 6*scale, headR*1.9);
+  } else {
+    ctx.beginPath();
+    ctx.arc(f.x, headY-headR*0.25, headR*0.98, Math.PI*1.0, Math.PI*2.0);
+    ctx.fill();
+  }
+
+  // head
+  ctx.fillStyle = '#e9b98a';
+  ctx.beginPath();
+  ctx.arc(f.x, headY, headR, 0, Math.PI*2);
+  ctx.fill();
+
+  // 顔（目と口）
+  const eyeOff = fc*headR*0.28;
+  ctx.fillStyle = '#2b2320';
+  ctx.beginPath(); ctx.arc(f.x+eyeOff-headR*0.32, headY-headR*0.05, headR*0.11, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(f.x+eyeOff+headR*0.32, headY-headR*0.05, headR*0.11, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#7a4632';
+  ctx.lineWidth = Math.max(1, headR*0.09);
+  ctx.beginPath();
+  ctx.arc(f.x+eyeOff*0.4, headY+headR*0.42, headR*0.32, 0.15*Math.PI, 0.85*Math.PI);
+  ctx.stroke();
+
+  // hurt tint
+  if(f.state==='hurt'){
+    ctx.save();
+    ctx.globalAlpha=0.4;
+    ctx.fillStyle = '#ff2d4d';
+    roundRect(f.x-bw/2, shoulderY, bw, torsoH, 6*scale); ctx.fill();
+    ctx.restore();
+  }
+
+  drawAccessory(f, hipY, shoulderY, headY, bw);
+}
+
+function easeOutQuad(t){ return 1-(1-t)*(1-t); }
+
+function roundRect(x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+function shade(hex, amt){
+  const n = parseInt(hex.slice(1),16);
+  let r=(n>>16)+amt, g=((n>>8)&0xff)+amt, b=(n&0xff)+amt;
+  r=Math.max(0,Math.min(255,r)); g=Math.max(0,Math.min(255,g)); b=Math.max(0,Math.min(255,b));
+  return `rgb(${r},${g},${b})`;
+}
+
+/* =========================================================
+   ラウンド勝敗
+========================================================= */
+function endRound(winnerIsP1, reason){
+  roundActive = false;
+  if(winnerIsP1===1) state.p1Wins++;
+  else if(winnerIsP1===2) state.p2Wins++;
+  renderPips();
+
+  const matchDone = state.p1Wins>=state.roundsToWin || state.p2Wins>=state.roundsToWin;
+
+  let big = winnerIsP1===1 ? 'ROUND WIN!' : (winnerIsP1===2 ? 'ROUND LOSE...' : 'DRAW');
+  if(!matchDone){
+    if(winnerIsP1===1) playTone({freq:660, duration:0.2, type:'square', volume:0.2});
+    else if(winnerIsP1===2) playTone({freq:260, freqEnd:150, duration:0.25, type:'sawtooth', volume:0.18});
+  }
+  if(state.mode==='online' && netRole==='host'){
+    netEmitEvent('round_end', {winnerIsP1, reason:reason||''});
+  }
+  showOverlay(big, reason||'', 1100, ()=>{
+    if(matchDone){
+      finishMatch();
+    } else {
+      startRound();
+    }
+  });
+}
+
+function finishMatch(){
+  const playerWon = state.p1Wins>state.p2Wins;
+  stopBgm();
+  if(playerWon) sfxWin(); else sfxLose();
+  const panel = document.getElementById('result-panel');
+  const title = document.getElementById('result-title');
+  const desc = document.getElementById('result-desc');
+  const btnContinue = document.getElementById('btn-result-continue');
+  const btnMenu = document.getElementById('btn-result-menu');
+
+  btnMenu.onclick = ()=>{ panel.classList.remove('show'); netLeaveRoom(); showScreen('screen-mode'); };
+
+  if(state.mode==='online'){
+    const p1Name = P1.cd.name, p2Name = P2.cd.name;
+    title.textContent = playerWon ? 'VICTORY' : 'DEFEAT';
+    title.style.color = playerWon ? 'var(--gold)' : '#ff5c76';
+    desc.textContent = playerWon ? `${p1Name}が${p2Name}を下した！` : `${p2Name}に敗れた…`;
+    btnContinue.textContent = 'ロビーに戻る';
+    btnContinue.onclick = ()=>{ panel.classList.remove('show'); netLeaveRoom(); showScreen('screen-mode'); };
+    // p1Won を客観的に送り、ゲスト側（P2視点）で自分の勝敗として解釈させる
+    netEmitEvent('match_end', {
+      p1Won: playerWon,
+      p1Name, p2Name,
+    });
+    panel.classList.add('show');
+  } else if(state.mode==='simple'){
+    title.textContent = playerWon ? 'VICTORY' : 'DEFEAT';
+    title.style.color = playerWon ? 'var(--gold)' : '#ff5c76';
+    if(playerWon) awardXP(10);
+    desc.textContent = playerWon
+      ? `${P1.cd.name}が${P2.cd.name}を下した！(+10XP)`
+      : `${P2.cd.name}に敗れた…鍛え直して再挑戦だ。`;
+    btnContinue.textContent = 'もう一度戦う';
+    btnContinue.onclick = ()=>{ panel.classList.remove('show'); state.p1Wins=0; state.p2Wins=0; startBattle({showStage:false}); };
+    panel.classList.add('show');
+  } else if(state.mode==='tournament'){
+    const match = currentTournamentMatch();
+    if(state.spectator){
+      // CPU同士の観戦中の試合が最後まで進んだ場合（スキップせず見届けたケース）
+      const winner = playerWon ? match.a : match.b; // P1=match.a, P2=match.b（startSpectatorMatch参照）
+      panel.classList.remove('show');
+      state.spectator = false;
+      resolveCurrentTournamentMatch(winner);
+      showTournamentScreen();
+      return;
+    }
+    const oppParticipant = isPlayerSlot(match.a) ? match.b : match.a;
+    if(playerWon){
+      awardXP(10);
+      const clearedRoundName = TOURNAMENT_ROUND_NAMES[tournament.currentRound];
+      resolveCurrentTournamentMatch(tournament.playerParticipant);
+      if(tournament.championId){
+        awardXP(30);
+        title.textContent = 'CHAMPION!!';
+        title.style.color = 'var(--gold)';
+        desc.textContent = `全15人のCPUを打ち破り、16人トーナメントを制覇した！(+10XP、優勝ボーナス+30XP)`;
+        btnContinue.textContent = '結果を見る';
+      } else {
+        title.textContent = `${clearedRoundName} 勝利`;
+        title.style.color = 'var(--gold)';
+        desc.textContent = `${oppParticipant.label}を撃破！(+10XP) 次の試合に進もう。`;
+        btnContinue.textContent = '次へ進む';
+      }
+    } else {
+      const roundName = TOURNAMENT_ROUND_NAMES[tournament.currentRound];
+      resolveCurrentTournamentMatch(oppParticipant);
+      title.textContent = 'ELIMINATED';
+      title.style.color = '#ff5c76';
+      desc.textContent = `${roundName}で${oppParticipant.label}に敗れ、トーナメントから姿を消した…`;
+      btnContinue.textContent = '結果を見る';
+    }
+    btnContinue.onclick = ()=>{ panel.classList.remove('show'); showTournamentScreen(); };
+    panel.classList.add('show');
+  } else if(state.mode==='charget'){
+    if(playerWon){
+      awardXP(10);
+      const gotChar = getChar(state.cpuCharId);
+      const isNew = unlockCharacter(state.cpuCharId);
+      const getMsg = isNew ? `新キャラクター「${gotChar.name}」を入手した！` : `${gotChar.name}を撃破！(入手済み)`;
+      if(state.charGetStage>=10){
+        title.textContent = 'COMPLETE!!';
+        title.style.color = 'var(--gold)';
+        desc.textContent = `全10ステージを制覇した！${getMsg} (+10XP)`;
+        btnContinue.textContent = 'タイトルへ';
+        btnContinue.onclick = ()=>{ panel.classList.remove('show'); showScreen('screen-title'); };
+      } else {
+        title.textContent = `STAGE ${state.charGetStage} CLEAR`;
+        title.style.color = 'var(--gold)';
+        desc.textContent = `${getMsg} (+10XP) 次のステージへ進もう。`;
+        btnContinue.textContent = '次のステージへ';
+        btnContinue.onclick = ()=>{
+          panel.classList.remove('show');
+          state.charGetStage++;
+          startCharGetStage();
+        };
+      }
+    } else {
+      title.textContent = 'GAME OVER';
+      title.style.color = '#ff5c76';
+      desc.textContent = `ステージ${state.charGetStage}で${P2.cd.name}に敗れた…到達ステージ ${state.charGetStage} / 10`;
+      btnContinue.textContent = 'もう一度挑戦';
+      btnContinue.onclick = ()=>{
+        panel.classList.remove('show');
+        startCharGetRun();
+      };
+    }
+    panel.classList.add('show');
+  } else {
+    if(playerWon){
+      awardXP(10);
+      if(state.dungeonStage>=10){
+        title.textContent = 'DUNGEON CLEAR!!';
+        title.style.color = 'var(--gold)';
+        desc.textContent = '謎の強敵「？？？」を打ち破り、全10ステージを制覇した！真の格闘王の誕生だ。(+10XP)';
+        btnContinue.textContent = 'タイトルへ';
+        btnContinue.onclick = ()=>{ panel.classList.remove('show'); showScreen('screen-title'); };
+      } else {
+        title.textContent = `STAGE ${state.dungeonStage} CLEAR`;
+        title.style.color = 'var(--gold)';
+        desc.textContent = `${P2.cd.name}を撃破！(+10XP) 次のステージへ進もう。`;
+        btnContinue.textContent = '次のステージへ';
+        btnContinue.onclick = ()=>{
+          panel.classList.remove('show');
+          state.dungeonStage++;
+          startDungeonStage();
+        };
+      }
+    } else {
+      title.textContent = 'GAME OVER';
+      title.style.color = '#ff5c76';
+      desc.textContent = `ステージ${state.dungeonStage}で${P2.cd.name}に敗れた…到達ステージ ${state.dungeonStage} / 10`;
+      btnContinue.textContent = 'ダンジョン再挑戦';
+      btnContinue.onclick = ()=>{
+        panel.classList.remove('show');
+        state.dungeonStage = 1;
+        startDungeonStage();
+      };
+    }
+    panel.classList.add('show');
+  }
+}
+
+/* =========================================================
+   メインループ
+========================================================= */
+function gameLoop(){
+  requestAnimationFrame(gameLoop);
+  if(state.screen!=='screen-battle') return;
+
+  if(roundActive && !overlayBusy && !paused){
+    if(state.mode==='online' && netRole==='guest'){
+      netMaybeSendInput();
+    } else {
+      if(state.spectator){ handleCpuAI(P1, P2); } else { handlePlayerInput(); }
+      if(state.mode==='online' && netRole==='host'){
+        applyInputToFighter(P2, netRemoteInput);
+      } else {
+        handleCpuAI(P2, P1);
+      }
+
+      updateFighterPhysics(P1);
+      updateFighterPhysics(P2);
+
+      if(P1.state==='punch'||P1.state==='kick'||P1.state==='special') resolveAttack(P1,P2);
+      if(P2.state==='punch'||P2.state==='kick'||P2.state==='special') resolveAttack(P2,P1);
+
+      // prevent overlap（地上にいる者同士のみ。ジャンプ中は相手を飛び越えられる）
+      const minDist = 46 * ((P1.cd.sizeScale||1)+(P2.cd.sizeScale||1))/2;
+      if(P1.onGround && P2.onGround && Math.abs(P1.x-P2.x)<minDist){
+        const mid=(P1.x+P2.x)/2;
+        P1.x = P1.x<P2.x ? mid-minDist/2 : mid+minDist/2;
+        P2.x = P2.x<P1.x ? mid-minDist/2 : mid+minDist/2;
+      }
+      wrapX(P1); wrapX(P2); // 押し出しで画面外に出ないよう再度クランプ
+      faceOpponent(P1,P2);
+
+      if(P1.hp<=0 && P1.state!=='ko'){ P1.state='ko'; }
+      if(P2.hp<=0 && P2.state!=='ko'){ P2.state='ko'; }
+
+      updateHud();
+
+      if(P1.hp<=0 || P2.hp<=0){
+        const winner = P1.hp<=0 && P2.hp<=0 ? 0 : (P1.hp<=0 ? 2 : 1);
+        endRound(winner, winner===0?'両者ダウン':'');
+      }
+
+      if(state.mode==='online' && netRole==='host') netMaybeSendState();
+    }
+  }
+
+  // render
+  ctx.save();
+  if(canvasShake>0){
+    ctx.translate((Math.random()-0.5)*canvasShake, (Math.random()-0.5)*canvasShake);
+    canvasShake *= 0.85;
+    if(canvasShake<0.3) canvasShake=0;
+  }
+  drawBackground();
+  if(P1 && P2){
+    const order = P1.x<P2.x ? [P1,P2] : [P2,P1];
+    order.forEach(drawFighter);
+  }
+  ctx.restore();
+}
+requestAnimationFrame(gameLoop);
+
+})();
+</script>
+</body>
+</html>
